@@ -304,16 +304,19 @@ class SubtitleGenerator:
             if not sentences:
                 continue
 
-            # 进一步将长句拆为子段（按逗号/分号）
+            # Split long sentences into readable caption groups.
+            # CJK is grouped by characters; English is grouped by words.
             all_segments = []
             for sent in sentences:
-                if len(sent) > max_chars_per_group:
-                    sub_parts = _re.split(r'(?<=[，、；,;])', sent)
+                is_cjk = bool(_re.search(r'[\u3400-\u9fff]', sent))
+                group_limit = max_chars_per_group if is_cjk else max(max_chars_per_group, 38)
+                if is_cjk:
+                    parts = _re.split(r'(?<=[，、；,;])', sent) if len(sent) > group_limit else [sent]
                     temp = ""
-                    for part in sub_parts:
+                    for part in parts:
                         if not part.strip():
                             continue
-                        if not temp or len(temp) + len(part) <= max_chars_per_group:
+                        if not temp or len(temp) + len(part) <= group_limit:
                             temp += part
                         else:
                             if temp.strip():
@@ -322,7 +325,23 @@ class SubtitleGenerator:
                     if temp.strip():
                         all_segments.append(temp.strip())
                 else:
-                    all_segments.append(sent.strip())
+                    words = sent.split()
+                    if len(sent) <= group_limit or len(words) <= 1:
+                        all_segments.append(sent.strip())
+                        continue
+                    temp_words = []
+                    temp_len = 0
+                    for word in words:
+                        extra_len = len(word) + (1 if temp_words else 0)
+                        if temp_words and temp_len + extra_len > group_limit:
+                            all_segments.append(" ".join(temp_words))
+                            temp_words = [word]
+                            temp_len = len(word)
+                        else:
+                            temp_words.append(word)
+                            temp_len += extra_len
+                    if temp_words:
+                        all_segments.append(" ".join(temp_words))
 
             if not all_segments:
                 continue
@@ -400,7 +419,13 @@ class SubtitleGenerator:
         raw_word_cues = getattr(cues, "cues", None)
         if raw_word_cues and isinstance(raw_word_cues, list) and len(raw_word_cues) >= _MIN_WORD_CUES_FOR_FINE:
             try:
-                srt_content = SubtitleGenerator._generate_fine_srt_from_word_cues(raw_word_cues)
+                cue_text = " ".join(getattr(cue, "content", "") for cue in raw_word_cues)
+                has_cjk = bool(_re.search(r'[\u4e00-\u9fff]', cue_text))
+                caption_char_limit = _MAX_SUB_CHARS if has_cjk else 38
+                srt_content = SubtitleGenerator._generate_fine_srt_from_word_cues(
+                    raw_word_cues,
+                    max_chars=caption_char_limit,
+                )
                 if srt_content.strip():
                     subtitles_count = srt_content.count("\n\n") + 1 if "\n\n" in srt_content else (
                         1 if srt_content.strip() else 0

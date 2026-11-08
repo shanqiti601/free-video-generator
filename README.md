@@ -63,7 +63,7 @@ All AI API calls share a global token bucket rate limiter (16 requests/min), wit
 
 Both Creative Video and Manuscript Video support:
 
-- **Free TTS narration**: Based on Microsoft Edge TTS, offering 4 Chinese voice roles (gentle female, steady male, lively female, young male) with adjustable speech rate (-30% to +30%)
+- **Free TTS narration**: Based on Microsoft Edge TTS, offering five English voices (Guy, Jenny, Michelle, Roger, and Steffan) with adjustable speech rate (-30% to +30%)
 - **Word-level fine-grained subtitles**: SRT subtitles generated from TTS word-level timestamps, one entry every 2-3 seconds, with precise audio-video sync
 - **Multi-line auto-wrapping**: Long subtitle text is intelligently split into two lines, preferring punctuation break points to prevent screen overflow
 - **Fully configurable subtitle style**: Font, color, size, position (top/bottom), stroke, and semi-transparent background
@@ -316,7 +316,7 @@ free-video-generator/
 | LLM | Agnes Chat (`agnes-2.0-flash`) | Free — story, script, narration generation |
 | Image AI | `agnes-image-2.1-flash` (t2i) / `agnes-image-2.0-flash` (i2i) | Free — reference images, end frames, standalone image generation |
 | Video AI | `agnes-video-v2.0` | Free — text-to-video, image-to-video, keyframes |
-| TTS | Edge TTS (Microsoft) | Free — 4 Chinese voices, no extra API key needed |
+| TTS | Edge TTS (Microsoft) | Free — 5 English voices, no extra API key needed |
 | Subtitles | moviepy + srt | Fine-grained word-level SRT, multi-line wrapping |
 | Video Processing | moviepy + ffmpeg | Concatenation, subtitle overlay, audio mixing |
 
