@@ -404,7 +404,13 @@ class SubtitleGenerator:
         raw_word_cues = getattr(cues, "cues", None)
         if raw_word_cues and isinstance(raw_word_cues, list) and len(raw_word_cues) >= _MIN_WORD_CUES_FOR_FINE:
             try:
-                srt_content = SubtitleGenerator._generate_fine_srt_from_word_cues(raw_word_cues)
+                cue_text = " ".join(getattr(cue, "content", "") for cue in raw_word_cues)
+                has_cjk = bool(_re.search(r'[\u4e00-\u9fff]', cue_text))
+                caption_char_limit = _MAX_SUB_CHARS if has_cjk else 38
+                srt_content = SubtitleGenerator._generate_fine_srt_from_word_cues(
+                    raw_word_cues,
+                    max_chars=caption_char_limit,
+                )
                 if srt_content.strip():
                     subtitles_count = srt_content.count("\n\n") + 1 if "\n\n" in srt_content else (
                         1 if srt_content.strip() else 0
