@@ -305,16 +305,15 @@ class SubtitleGenerator:
                 continue
 
             # Split long sentences into readable caption groups.
-            # English needs a wider character limit than CJK text to avoid
-            # producing one- or two-word captions.
+            # CJK is grouped by characters; English is grouped by words.
             all_segments = []
             for sent in sentences:
-                is_cjk = bool(_re.search(r'[\u4e00-\u9fff]', sent))
+                is_cjk = bool(_re.search(r'[\u3400-\u9fff]', sent))
                 group_limit = max_chars_per_group if is_cjk else max(max_chars_per_group, 38)
-                if len(sent) > group_limit:
-                    sub_parts = _re.split(r'(?<=[，、；,;])', sent)
+                if is_cjk:
+                    parts = _re.split(r'(?<=[，、；,;])', sent) if len(sent) > group_limit else [sent]
                     temp = ""
-                    for part in sub_parts:
+                    for part in parts:
                         if not part.strip():
                             continue
                         if not temp or len(temp) + len(part) <= group_limit:
@@ -326,7 +325,23 @@ class SubtitleGenerator:
                     if temp.strip():
                         all_segments.append(temp.strip())
                 else:
-                    all_segments.append(sent.strip())
+                    words = sent.split()
+                    if len(sent) <= group_limit or len(words) <= 1:
+                        all_segments.append(sent.strip())
+                        continue
+                    temp_words = []
+                    temp_len = 0
+                    for word in words:
+                        extra_len = len(word) + (1 if temp_words else 0)
+                        if temp_words and temp_len + extra_len > group_limit:
+                            all_segments.append(" ".join(temp_words))
+                            temp_words = [word]
+                            temp_len = len(word)
+                        else:
+                            temp_words.append(word)
+                            temp_len += extra_len
+                    if temp_words:
+                        all_segments.append(" ".join(temp_words))
 
             if not all_segments:
                 continue
