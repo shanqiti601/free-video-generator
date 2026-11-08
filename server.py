@@ -977,7 +977,7 @@ async def create_creative_task(
     generate_end_frames_from_ref: bool = Form(True),
     # v2.0 音频配置
     audio_enabled: bool = Form(False),
-    audio_voice: str = Form("zh-CN-XiaoxiaoNeural"),
+    audio_voice: str = Form("en-US-GuyNeural"),
     audio_rate: str = Form("+0%"),
     # v3.0 字幕独立配置
     subtitle_enabled: bool = Form(True),
@@ -1118,7 +1118,7 @@ async def create_manuscript_task(
     video_duration: int = Form(10),
     # v2.0 音频配置
     audio_enabled: bool = Form(True),
-    audio_voice: str = Form("zh-CN-XiaoxiaoNeural"),
+    audio_voice: str = Form("en-US-GuyNeural"),
     audio_rate: str = Form("+0%"),
     # v3.0 字幕独立配置
     subtitle_enabled: bool = Form(True),
@@ -1206,7 +1206,7 @@ async def create_anchor_task(
     video_width: int = Form(768),
     video_height: int = Form(1344),
     audio_enabled: bool = Form(True),
-    audio_voice: str = Form("zh-CN-XiaoxiaoNeural"),
+    audio_voice: str = Form("en-US-GuyNeural"),
     audio_rate: str = Form("+0%"),
     subtitle_enabled: bool = Form(True),
     subtitle_style_mode: str = Form("fixed"),
@@ -1325,7 +1325,7 @@ async def create_task_legacy(
         generate_end_frames_from_ref=generate_end_frames_from_ref,
         # 提供音频/字幕默认值（旧端点不传这些参数）
         audio_enabled=False,
-        audio_voice="zh-CN-XiaoxiaoNeural",
+        audio_voice="en-US-GuyNeural",
         audio_rate="+0%",
         subtitle_enabled=True,
         subtitle_font="STHeitiMedium.ttc",
