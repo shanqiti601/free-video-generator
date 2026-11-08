@@ -286,14 +286,15 @@ def set_active_workspace(path: str) -> str:
 # ═══════════════════════════════════════════════════
 
 # D3：默认语音角色
-DEFAULT_VOICE = "zh-CN-XiaoxiaoNeural"
+DEFAULT_VOICE = "en-US-GuyNeural"
 
 # D3：可选中文语音角色列表
 AVAILABLE_VOICES = [
-    {"id": "zh-CN-XiaoxiaoNeural", "label": "Xiaoxiao（温柔女声）"},
-    {"id": "zh-CN-YunyangNeural", "label": "Yunyang（沉稳男声）"},
-    {"id": "zh-CN-XiaoyiNeural", "label": "Xiaoyi（活泼女声）"},
-    {"id": "zh-CN-YunxiNeural", "label": "Yunxi（年轻男声）"},
+    {"id": "en-US-GuyNeural", "label": "Guy - English Male"},
+    {"id": "en-US-JennyNeural", "label": "Jenny - English Female"},
+    {"id": "en-US-MichelleNeural", "label": "Michelle - English Female"},
+    {"id": "en-US-RogerNeural", "label": "Roger - English Male"},
+    {"id": "en-US-SteffanNeural", "label": "Steffan - English Male"},
 ]
 
 
