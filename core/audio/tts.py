@@ -19,7 +19,7 @@ class TTSEngine(ABC):
 
     @abstractmethod
     async def generate(
-        self, text: str, output_path: str, voice: str = "zh-CN-XiaoxiaoNeural", rate: str = "+0%"
+        self, text: str, output_path: str, voice: str = "en-US-GuyNeural", rate: str = "+0%"
     ) -> Tuple[str, object]:
         """生成音频文件，返回 (audio_path, sub_maker_or_cues)。"""
         ...
@@ -33,7 +33,7 @@ class EdgeTTSEngine(TTSEngine):
     """
 
     async def generate(
-        self, text: str, output_path: str, voice: str = "zh-CN-XiaoxiaoNeural", rate: str = "+0%"
+        self, text: str, output_path: str, voice: str = "en-US-GuyNeural", rate: str = "+0%"
     ) -> Tuple[str, "edge_tts.SubMaker"]:
         """生成 TTS 音频 + SubMaker（含 cues 时间戳）。
 
@@ -97,7 +97,7 @@ class SilentTTSEngine(TTSEngine):
         self,
         text: str,
         output_path: str,
-        voice: str = "zh-CN-XiaoxiaoNeural",
+        voice: str = "en-US-GuyNeural",
         rate: str = "+0%",
         duration_sec: Optional[float] = None,
     ) -> Tuple[str, dict]:
