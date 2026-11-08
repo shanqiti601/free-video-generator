@@ -26,7 +26,14 @@ from core.pipelines import BasePipeline, PipelineShutdown
 from core.screenwriter import Screenwriter
 from models.task import CreativeVideoTask, SceneTask, StepStatus, SubtitleConfig
 
-_CHARS_PER_SEC = 4.0
+_CJK_CHARS_PER_SEC = 4.0
+_EN_CHARS_PER_SEC = 15.0
+
+
+def _narration_char_limit(duration: float, sample_text: str = "") -> int:
+    """Estimate a practical narration character budget for CJK or English."""
+    rate = _CJK_CHARS_PER_SEC if re.search(r'[\u3400-\u9fff]', sample_text or "") else _EN_CHARS_PER_SEC
+    return max(int(duration * rate), 20)
 _SENTENCE_BOUNDARY_RE = re.compile(r"(?<=[。！？.!?])")
 
 def _fallback_end_frame(text: str) -> str:
@@ -1529,14 +1536,14 @@ class CreativeVideoPipeline(BasePipeline):
         if self._state.narrations:
             _scenes = self._state.scenes
             needs_update = any(
-                len(n) > max(int((_scenes[i].duration if i < len(_scenes) else self._state.video_duration) * _CHARS_PER_SEC), 20)
+                len(n) > _narration_char_limit((_scenes[i].duration if i < len(_scenes) else self._state.video_duration), n)
                 for i, n in enumerate(self._state.narrations)
             )
             if needs_update:
                 self._state.narrations = [
                     _trim_to_sentence(
                         n,
-                        max(int((_scenes[i].duration if i < len(_scenes) else self._state.video_duration) * _CHARS_PER_SEC), 20),
+                        _narration_char_limit((_scenes[i].duration if i < len(_scenes) else self._state.video_duration), n),
                     )
                     for i, n in enumerate(self._state.narrations)
                 ]
@@ -1568,7 +1575,7 @@ class CreativeVideoPipeline(BasePipeline):
         narrations = [
             _trim_to_sentence(
                 n,
-                max(int((_scenes[i].duration if i < len(_scenes) else self._state.video_duration) * _CHARS_PER_SEC), 20),
+                _narration_char_limit((_scenes[i].duration if i < len(_scenes) else self._state.video_duration), n),
             )
             for i, n in enumerate(narrations)
         ]
@@ -1609,7 +1616,7 @@ class CreativeVideoPipeline(BasePipeline):
 
         if not narration or len(narration) < 5:
             logger.warning("[Pipeline] LLM returned empty narration, using fallback")
-            max_chars = max(int(total_duration * _CHARS_PER_SEC), 40)
+            max_chars = max(_narration_char_limit(total_duration, story), 40)
             narration = _trim_to_sentence(story, max_chars) if story else ""
 
         self._state.narrations = [narration]
