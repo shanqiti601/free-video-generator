@@ -304,16 +304,20 @@ class SubtitleGenerator:
             if not sentences:
                 continue
 
-            # 进一步将长句拆为子段（按逗号/分号）
+            # Split long sentences into readable caption groups.
+            # English needs a wider character limit than CJK text to avoid
+            # producing one- or two-word captions.
             all_segments = []
             for sent in sentences:
-                if len(sent) > max_chars_per_group:
+                is_cjk = bool(_re.search(r'[\u4e00-\u9fff]', sent))
+                group_limit = max_chars_per_group if is_cjk else max(max_chars_per_group, 38)
+                if len(sent) > group_limit:
                     sub_parts = _re.split(r'(?<=[，、；,;])', sent)
                     temp = ""
                     for part in sub_parts:
                         if not part.strip():
                             continue
-                        if not temp or len(temp) + len(part) <= max_chars_per_group:
+                        if not temp or len(temp) + len(part) <= group_limit:
                             temp += part
                         else:
                             if temp.strip():
