@@ -212,34 +212,42 @@ class BasePipeline(ABC):
 
         # ── 2. 生成 SRT ──
         num_segments = len(segment_texts)
-        if subtitle_config.enabled and num_segments > 1:
-            # 按音频时长等比缩放段落时长
+        if subtitle_config.enabled and sub_maker is not None:
+            # Prefer actual TTS word-boundary timestamps for every segment count.
+            # The scene-aware fallback distributes text evenly and cannot guarantee
+            # synchronization with the generated narration.
+            SubtitleGenerator.cues_to_srt(sub_maker, srt_path)
+            if not os.path.exists(srt_path) or os.path.getsize(srt_path) == 0:
+                logger.warning("[Subtitle] TTS cues produced no subtitles; using duration-based fallback")
+                if num_segments > 1:
+                    total_est = sum(segment_durations)
+                    scaled_durations = list(segment_durations)
+                    if actual_audio_dur > 0 and total_est > 0:
+                        scale = actual_audio_dur / total_est
+                        scaled_durations = [d * scale for d in scaled_durations]
+                    srt_content = SubtitleGenerator._generate_scene_aware_srt(
+                        segment_texts, scaled_durations,
+                    )
+                    with open(srt_path, "w", encoding="utf-8") as f:
+                        f.write(srt_content)
+                else:
+                    total_dur = actual_audio_dur if actual_audio_dur > 0 else sum(segment_durations)
+                    SubtitleGenerator.text_to_srt(full_text, srt_path, total_dur)
+        elif subtitle_config.enabled and num_segments > 1:
+            # No TTS timestamps available: estimate subtitle timing by scene duration.
             total_est = sum(segment_durations)
             scaled_durations = list(segment_durations)
             if actual_audio_dur > 0 and total_est > 0:
                 scale = actual_audio_dur / total_est
                 scaled_durations = [d * scale for d in scaled_durations]
-                logger.info(
-                    "[Subtitle] durations scaled by %.3f (audio=%.2fs, est=%.2fs)",
-                    scale, actual_audio_dur, total_est,
-                )
-
             srt_content = SubtitleGenerator._generate_scene_aware_srt(
                 segment_texts, scaled_durations,
-                word_cues=sub_maker if sub_maker is not None else None,
             )
             if srt_content.strip():
                 with open(srt_path, "w", encoding="utf-8") as f:
                     f.write(srt_content)
-                entry_count = srt_content.count("\n\n") + 1 if "\n\n" in srt_content else 0
-                logger.info(
-                    "[Subtitle] Scene-aware SRT: %d entries across %d segments",
-                    entry_count, num_segments,
-                )
             else:
                 subtitle_config.enabled = False
-        elif subtitle_config.enabled and sub_maker is not None:
-            SubtitleGenerator.cues_to_srt(sub_maker, srt_path)
         elif subtitle_config.enabled:
             total_dur = actual_audio_dur if actual_audio_dur > 0 else sum(segment_durations)
             SubtitleGenerator.text_to_srt(full_text, srt_path, total_dur)
