@@ -28,11 +28,18 @@ from models.task import (
 
 logger = logging.getLogger(__name__)
 
-# Chinese sentence-ending punctuation pattern.
-_SENTENCE_END_RE = re.compile(r"(?<=[。！？])")
+# Split after Chinese or English sentence-ending punctuation.
+_SENTENCE_END_RE = re.compile(r"(?<=[。！？.!?])")
 
-# Estimated Chinese speech rate: ~4 characters per second.
-_CHARS_PER_SEC = 4.0
+
+def _estimate_speech_seconds(text: str) -> float:
+    """Estimate narration duration for both CJK and space-delimited languages."""
+    if not text:
+        return 0.0
+    if re.search(r'[\u3400-\u9fff]', text):
+        return len(text) / 4.0
+    words = re.findall(r"\b[\w’'-]+\b", text)
+    return len(words) / 2.5 if words else len(text) / 15.0
 
 # Greedy-merge duration thresholds (seconds).
 _MAX_SEGMENT_DURATION = 12.0
@@ -354,7 +361,7 @@ class ManuscriptVideoPipeline(BasePipeline):
         current_duration = 0.0
 
         for sentence in candidate_sentences:
-            sentence_duration = len(sentence) / _CHARS_PER_SEC
+            sentence_duration = _estimate_speech_seconds(sentence)
 
             if not current_text:
                 # Starting a new group.
@@ -381,7 +388,7 @@ class ManuscriptVideoPipeline(BasePipeline):
         # Step 4: post-process -- merge short trailing segments into previous.
         final_texts: List[str] = []
         for segment in merged:
-            seg_duration = len(segment) / _CHARS_PER_SEC
+            seg_duration = _estimate_speech_seconds(segment)
             if seg_duration < _MIN_SEGMENT_DURATION and final_texts:
                 # Merge into previous paragraph.
                 final_texts[-1] += segment
@@ -392,7 +399,7 @@ class ManuscriptVideoPipeline(BasePipeline):
         # Build ManuscriptParagraph list.
         paragraphs: List[ManuscriptParagraph] = []
         for idx, para_text in enumerate(final_texts):
-            est_duration = len(para_text) / _CHARS_PER_SEC
+            est_duration = _estimate_speech_seconds(para_text)
             para = ManuscriptParagraph(
                 index=idx,
                 text=para_text,
@@ -560,7 +567,7 @@ class ManuscriptVideoPipeline(BasePipeline):
                 0.15 + 0.20 * (i / max(total, 1)),
             )
 
-            para_duration = max(int(math.ceil(len(para.text) / _CHARS_PER_SEC)), 3)
+            para_duration = max(int(math.ceil(_estimate_speech_seconds(para.text))), 3)
             logger.info(
                 "[Manuscript] video: paragraph %d estimated duration %.1fs (chars=%d)",
                 para.index, para_duration, len(para.text),
@@ -713,7 +720,7 @@ class ManuscriptVideoPipeline(BasePipeline):
         # 估算各段时长
         segment_durations = []
         for p in paragraphs:
-            dur = max(len(p.text) / _CHARS_PER_SEC, 2.0) if p.text else 5.0
+            dur = max(_estimate_speech_seconds(p.text), 2.0) if p.text else 5.0
             segment_durations.append(dur)
     
         await self._emit(
