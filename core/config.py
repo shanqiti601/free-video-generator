@@ -288,7 +288,7 @@ def set_active_workspace(path: str) -> str:
 # D3：默认语音角色
 DEFAULT_VOICE = "en-US-GuyNeural"
 
-# D3：可选中文语音角色列表
+# D3: available English voice roles
 AVAILABLE_VOICES = [
     {"id": "en-US-GuyNeural", "label": "Guy - English Male"},
     {"id": "en-US-JennyNeural", "label": "Jenny - English Female"},
