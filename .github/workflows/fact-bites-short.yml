@@ -1,9 +1,6 @@
 name: Build Fact Bites Short
 
 on:
-  push:
-    branches: [main]
-    paths: [scripts/fact_bites_short.py]
   workflow_dispatch:
     inputs:
       hook:
