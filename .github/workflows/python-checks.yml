@@ -2,7 +2,7 @@ name: Python checks
 
 on:
   push:
-    branches: [fact-bites-fixes]
+    branches: [main, fact-bites-fixes]
   pull_request:
     branches: [main]
 
