@@ -27,8 +27,13 @@ def probe_duration(path):
     result = subprocess.run(
         ["ffprobe", "-v", "error", "-show_entries", "format=duration",
          "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
-        check=True, capture_output=True, text=True
+        capture_output=True, text=True
     )
+    if result.returncode != 0:
+        size = path.stat().st_size if path.exists() else 0
+        raise RuntimeError(
+            f"ffprobe could not read {path} ({size} bytes): {result.stderr.strip()}"
+        )
     return float(result.stdout.strip())
 
 
@@ -125,6 +130,10 @@ def write_srt(text, duration, path):
 
 async def make_voice(text, path):
     await edge_tts.Communicate(text, voice="en-US-GuyNeural", rate="+0%").save(str(path))
+    size = path.stat().st_size if path.exists() else 0
+    print(f"Edge TTS audio file size: {size} bytes")
+    if size < 1024:
+        raise RuntimeError("Edge TTS did not return a usable audio file.")
 
 
 def main():
