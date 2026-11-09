@@ -6,22 +6,22 @@ on:
       hook:
         description: "Opening hook"
         required: false
-        default: "This sounds impossible..."
+        default: "Deep in the ocean lives a creature with THREE hearts. But here's the mystery... one stops when it swims."
         type: string
       fact:
         description: "The fact to explain"
         required: false
-        default: "An octopus has three hearts."
+        default: "It's the octopus. Two hearts pump blood to its gills. The third sends blood to the rest of its body."
         type: string
       why:
         description: "Short explanation"
         required: false
-        default: "Two pump blood to the gills, while one pumps blood to the rest of its body."
+        default: "But wait. When an octopus swims, its main heart temporarily stops beating. Swimming takes so much energy that it often chooses to crawl instead."
         type: string
       cta:
         description: "Closing line"
         required: false
-        default: "Follow Fact Bites for more surprising facts."
+        default: "Three hearts. One strange secret. And the ocean is full of surprises. Follow Fact Bites for more."
         type: string
 
 permissions:
