@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Create a vertical Fact Bites short using free Edge TTS, Pillow and FFmpeg."""
+
+import argparse
+import asyncio
+import math
+import os
+import subprocess
+import textwrap
+from pathlib import Path
+
+import edge_tts
+from PIL import Image, ImageDraw, ImageFont
+
+W, H, FPS = 720, 1280, 25
+OUT = Path("output")
+FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+FONT_REG = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+
+
+def run(cmd):
+    subprocess.run(cmd, check=True)
+
+
+def probe_duration(path):
+    result = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", str(path)],
+        check=True, capture_output=True, text=True
+    )
+    return float(result.stdout.strip())
+
+
+def font(path, size):
+    return ImageFont.truetype(path, size)
+
+
+def wrap_lines(draw, text, fnt, max_width):
+    words = text.split()
+    lines, current = [], ""
+    for word in words:
+        trial = f"{current} {word}".strip()
+        if draw.textbbox((0, 0), trial, font=fnt)[2] <= max_width:
+            current = trial
+        else:
+            if current:
+                lines.append(current)
+            current = word
+    if current:
+        lines.append(current)
+    return lines or [""]
+
+
+def make_slide(path, section, heading, index):
+    top = [(12, 22, 48), (18, 32, 62), (20, 25, 55), (12, 28, 52)][index % 4]
+    bottom = [(20, 65, 91), (63, 39, 91), (93, 45, 56), (22, 76, 78)][index % 4]
+    img = Image.new("RGB", (W, H))
+    pix = img.load()
+    for y in range(H):
+        t = y / (H - 1)
+        c = tuple(int(top[k] * (1 - t) + bottom[k] * t) for k in range(3))
+        for x in range(W):
+            pix[x, y] = c
+
+    d = ImageDraw.Draw(img, "RGBA")
+    d.ellipse((500, -160, 880, 220), outline=(255, 255, 255, 35), width=5)
+    d.ellipse((-180, 900, 180, 1260), outline=(255, 255, 255, 28), width=5)
+    d.rounded_rectangle((48, 72, 672, 1208), radius=42,
+                        fill=(5, 12, 28, 75), outline=(255, 255, 255, 38), width=2)
+    d.rounded_rectangle((82, 112, 638, 122), radius=5, fill=(72, 226, 196, 255))
+    d.text((84, 160), "FACT BITES", font=font(FONT_BOLD, 25), fill=(111, 238, 218, 255))
+    d.text((84, 225), section.upper(), font=font(FONT_BOLD, 21), fill=(255, 197, 98, 255))
+
+    max_width = 540
+    size = 54
+    while size >= 34:
+        fnt = font(FONT_BOLD, size)
+        lines = wrap_lines(d, heading, fnt, max_width)
+        if len(lines) <= 6:
+            break
+        size -= 3
+    line_h = int(size * 1.3)
+    total_h = line_h * len(lines)
+    y = max(340, (H - total_h) // 2)
+    for line in lines:
+        box = d.textbbox((0, 0), line, font=fnt)
+        x = (W - (box[2] - box[0])) // 2
+        d.text((x + 2, y + 3), line, font=fnt, fill=(0, 0, 0, 100))
+        d.text((x, y), line, font=fnt, fill=(255, 255, 255, 255))
+        y += line_h
+
+    d.rounded_rectangle((84, 1090, 636, 1098), radius=4, fill=(255, 255, 255, 50))
+    d.rounded_rectangle((84, 1090, 84 + int(552 * (index + 1) / 4), 1098),
+                        radius=4, fill=(72, 226, 196, 255))
+    d.text((84, 1130), f"{index + 1} / 4", font=font(FONT_REG, 20),
+           fill=(220, 232, 245, 210))
+    img.save(path, quality=95)
+
+
+def srt_time(seconds):
+    ms = max(0, int(round(seconds * 1000)))
+    h, ms = divmod(ms, 3_600_000)
+    m, ms = divmod(ms, 60_000)
+    s, ms = divmod(ms, 1000)
+    return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
+
+def write_srt(text, duration, path):
+    words = text.split()
+    chunks = [" ".join(words[i:i + 5]) for i in range(0, len(words), 5)]
+    total = max(1, len(words))
+    cursor = 0
+    entries = []
+    for n, chunk in enumerate(chunks, 1):
+        count = len(chunk.split())
+        start = duration * cursor / total
+        cursor += count
+        end = duration * cursor / total
+        if n == len(chunks):
+            end = duration
+        entries.append(f"{n}\n{srt_time(start)} --> {srt_time(end)}\n{chunk}\n")
+    path.write_text("\n".join(entries), encoding="utf-8")
+
+
+async def make_voice(text, path):
+    await edge_tts.Communicate(text, voice="en-US-GuyNeural", rate="+0%").save(str(path))
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--hook", default="This sounds impossible...")
+    parser.add_argument("--fact", default="An octopus has three hearts.")
+    parser.add_argument("--why", default="Two pump blood to the gills, while one pumps blood to the rest of its body.")
+    parser.add_argument("--cta", default="Follow Fact Bites for more surprising facts.")
+    args = parser.parse_args()
+
+    OUT.mkdir(exist_ok=True)
+    parts = [args.hook.strip(), args.fact.strip(), args.why.strip(), args.cta.strip()]
+    narration = " ".join(p for p in parts if p)
+    audio = OUT / "voice.mp3"
+    asyncio.run(make_voice(narration, audio))
+    duration = probe_duration(audio) + 0.5
+
+    labels = ["THE HOOK", "THE FACT", "HOW IT WORKS", "MORE FACTS DAILY"]
+    slides = [args.hook, args.fact, args.why, args.cta]
+    clips = []
+    for i, (label, heading) in enumerate(zip(labels, slides)):
+        image_path = OUT / f"slide_{i + 1}.png"
+        clip_path = OUT / f"clip_{i + 1}.mp4"
+        make_slide(image_path, label, heading, i)
+        clip_duration = duration / 4
+        frames = max(1, math.ceil(clip_duration * FPS))
+        run([
+            "ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-i", str(image_path),
+            "-vf", f"zoompan=z='min(zoom+0.0007,1.07)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d={frames}:s={W}x{H}:fps={FPS},setsar=1",
+            "-frames:v", str(frames), "-an", "-c:v", "libx264", "-preset", "ultrafast",
+            "-pix_fmt", "yuv420p", str(clip_path)
+        ])
+        clips.append(clip_path)
+
+    concat_file = OUT / "clips.txt"
+    concat_file.write_text("".join(f"file '{p.resolve()}'\n" for p in clips), encoding="utf-8")
+    silent = OUT / "silent.mp4"
+    run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
+         "-i", str(concat_file), "-c", "copy", str(silent)])
+
+    subtitles = OUT / "captions.srt"
+    write_srt(narration, duration - 0.5, subtitles)
+    final = OUT / "Fact-Bites-Short.mp4"
+    style = "FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H0010182C,BorderStyle=1,Outline=3,Shadow=1,Alignment=2,MarginV=135"
+    run([
+        "ffmpeg", "-y", "-loglevel", "error", "-i", str(silent), "-i", str(audio),
+        "-vf", f"subtitles={subtitles}:force_style='{style}'",
+        "-map", "0:v:0", "-map", "1:a:0", "-c:v", "libx264", "-preset", "ultrafast",
+        "-crf", "23", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart",
+        str(final)
+    ])
+    print(f"VIDEO_READY={final}")
+    print(f"DURATION_SECONDS={probe_duration(final):.1f}")
+
+
+if __name__ == "__main__":
+    main()
