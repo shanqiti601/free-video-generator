@@ -129,11 +129,22 @@ def write_srt(text, duration, path):
 
 
 async def make_voice(text, path):
-    await edge_tts.Communicate(text, voice="en-US-GuyNeural", rate="+0%").save(str(path))
-    size = path.stat().st_size if path.exists() else 0
-    print(f"Edge TTS audio file size: {size} bytes")
-    if size < 1024:
-        raise RuntimeError("Edge TTS did not return a usable audio file.")
+    try:
+        await edge_tts.Communicate(text, voice="en-US-GuyNeural", rate="+0%").save(str(path))
+        size = path.stat().st_size if path.exists() else 0
+        print(f"Edge TTS audio file size: {size} bytes")
+        if size >= 1024:
+            return path
+        print("Edge TTS returned no audio; switching to the offline free voice.")
+    except Exception as exc:
+        print(f"Edge TTS unavailable ({exc}); switching to the offline free voice.")
+
+    fallback = path.with_suffix(".wav")
+    run(["espeak-ng", "-v", "en-us", "-s", "155", "-w", str(fallback), text])
+    if not fallback.exists() or fallback.stat().st_size < 1024:
+        raise RuntimeError("Neither Edge TTS nor the offline voice produced usable audio.")
+    print(f"Offline English narration ready: {fallback.stat().st_size} bytes")
+    return fallback
 
 
 def main():
@@ -147,8 +158,7 @@ def main():
     OUT.mkdir(exist_ok=True)
     parts = [args.hook.strip(), args.fact.strip(), args.why.strip(), args.cta.strip()]
     narration = " ".join(p for p in parts if p)
-    audio = OUT / "voice.mp3"
-    asyncio.run(make_voice(narration, audio))
+    audio = asyncio.run(make_voice(narration, OUT / "voice.mp3"))
     duration = probe_duration(audio) + 0.5
 
     labels = ["THE HOOK", "THE FACT", "HOW IT WORKS", "MORE FACTS DAILY"]
