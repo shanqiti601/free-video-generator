@@ -46,7 +46,7 @@ jobs:
       - name: Install free video tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-dejavu-core
+          sudo apt-get install -y ffmpeg fonts-dejavu-core espeak-ng
 
       - name: Install Python packages
         run: |
