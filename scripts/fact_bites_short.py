@@ -97,10 +97,10 @@ def make_slide(path, section, heading, index):
         d.text((x, y), line, font=fnt, fill=(255, 255, 255, 255))
         y += line_h
 
-    d.rounded_rectangle((84, 1090, 636, 1098), radius=4, fill=(255, 255, 255, 50))
-    d.rounded_rectangle((84, 1090, 84 + int(552 * (index + 1) / 4), 1098),
+    d.rounded_rectangle((84, 980, 636, 988), radius=4, fill=(255, 255, 255, 50))
+    d.rounded_rectangle((84, 980, 84 + int(552 * (index + 1) / 4), 988),
                         radius=4, fill=(72, 226, 196, 255))
-    d.text((84, 1130), f"{index + 1} / 4", font=font(FONT_REG, 20),
+    d.text((84, 1020), f"{index + 1} / 4", font=font(FONT_REG, 20),
            fill=(220, 232, 245, 210))
     img.save(path, quality=95)
 
