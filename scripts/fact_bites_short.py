@@ -113,21 +113,43 @@ def srt_time(seconds):
     return f"{h:02}:{m:02}:{s:02},{ms:03}"
 
 
-def write_srt(text, duration, path):
+def ass_time(seconds):
+    total_cs = max(0, int(round(seconds * 100)))
+    h, total_cs = divmod(total_cs, 360000)
+    m, total_cs = divmod(total_cs, 6000)
+    s, cs = divmod(total_cs, 100)
+    return f"{h}:{m:02}:{s:02}.{cs:02}"
+
+
+def write_ass(text, duration, path):
     words = text.split()
     chunks = [" ".join(words[i:i + 5]) for i in range(0, len(words), 5)]
     total = max(1, len(words))
     cursor = 0
-    entries = []
-    for n, chunk in enumerate(chunks, 1):
+    entries = [
+        "[Script Info]",
+        "ScriptType: v4.00+",
+        "PlayResX: 720",
+        "PlayResY: 1280",
+        "WrapStyle: 2",
+        "ScaledBorderAndShadow: yes",
+        "",
+        "[V4+ Styles]",
+        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
+        "Style: Default,DejaVu Sans,32,&H00FFFFFF,&H000000FF,&H0010182C,&H80000000,0,0,0,0,100,100,0,0,1,3,1,2,45,45,110,1",
+        "",
+        "[Events]",
+        "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
+    ]
+    for chunk in chunks:
         count = len(chunk.split())
         start = duration * cursor / total
         cursor += count
         end = duration * cursor / total
-        if n == len(chunks):
-            end = duration
-        entries.append(f"{n}\n{srt_time(start)} --> {srt_time(end)}\n{chunk}\n")
-    path.write_text("\n".join(entries), encoding="utf-8")
+        entries.append(
+            f"Dialogue: 0,{ass_time(start)},{ass_time(end)},Default,,0,0,0,,{chunk}"
+        )
+    path.write_text("\n".join(entries) + "\n", encoding="utf-8")
 
 
 async def make_voice(text, path):
@@ -186,13 +208,12 @@ def main():
     run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0",
          "-i", str(concat_file), "-c", "copy", str(silent)])
 
-    subtitles = OUT / "captions.srt"
-    write_srt(narration, duration - 0.5, subtitles)
+    subtitles = OUT / "captions.ass"
+    write_ass(narration, duration - 0.5, subtitles)
     final = OUT / "Fact-Bites-Short.mp4"
-    style = "FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H0010182C,BorderStyle=1,Outline=3,Shadow=1,Alignment=2,MarginV=135"
     run([
         "ffmpeg", "-y", "-loglevel", "error", "-i", str(silent), "-i", str(audio),
-        "-vf", f"subtitles={subtitles}:force_style='{style}'",
+        "-vf", f"subtitles={subtitles}",
         "-map", "0:v:0", "-map", "1:a:0", "-c:v", "libx264", "-preset", "ultrafast",
         "-crf", "23", "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart",
         str(final)
