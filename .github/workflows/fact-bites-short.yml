@@ -69,4 +69,4 @@ jobs:
           name: Fact-Bites-Short
           path: output/Fact-Bites-Short.mp4
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
