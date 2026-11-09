@@ -55,10 +55,10 @@ jobs:
 
       - name: Generate narrated vertical video
         env:
-          HOOK: ${{ inputs.hook }}
-          FACT: ${{ inputs.fact }}
-          WHY: ${{ inputs.why }}
-          CTA: ${{ inputs.cta }}
+          HOOK: ${{ inputs.hook || 'This sounds impossible...' }}
+          FACT: ${{ inputs.fact || 'An octopus has three hearts.' }}
+          WHY: ${{ inputs.why || 'Two pump blood to the gills, while one pumps blood to the rest of its body.' }}
+          CTA: ${{ inputs.cta || 'Follow Fact Bites for more surprising facts.' }}
         run: |
           python scripts/fact_bites_short.py \
             --hook "$HOOK" \
