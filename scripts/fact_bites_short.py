@@ -180,8 +180,13 @@ def main():
     args = parser.parse_args()
 
     OUT.mkdir(exist_ok=True)
-    parts = [args.hook.strip(), args.fact.strip(), args.why.strip(), args.cta.strip()]
-    narration = " ".join(p for p in parts if p)
+    parts = [
+        args.hook.strip() or "This sounds impossible...",
+        args.fact.strip() or "An octopus has three hearts.",
+        args.why.strip() or "Two pump blood to the gills, while one pumps blood to the rest of its body.",
+        args.cta.strip() or "Follow Fact Bites for more surprising facts.",
+    ]
+    narration = " ".join(parts)
     audio = asyncio.run(make_voice(narration, OUT / "voice.mp3"))
     duration = probe_duration(audio) + 0.5
 
