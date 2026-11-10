@@ -2,6 +2,7 @@
 """Create a cinematic Fact Bites documentary short using NOAA public-domain footage."""
 import argparse
 import asyncio
+import importlib.util
 import math
 import os
 import sys
@@ -11,15 +12,26 @@ from pathlib import Path
 
 import edge_tts
 
-# Make the repository's free-only multi-model reviewer importable when this
-# script is executed directly by GitHub Actions.
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+# Load this standalone helper by file path. Importing "core.model_team"
+# would execute core/__init__.py first, which pulls in the full video app and
+# optional dependencies that are not needed by this short-video workflow.
+AI_REVIEW_IMPORT_ERROR = ""
 try:
-    from core.model_team import consult_team, synthesize_replies, ModelTeamError
-except Exception:
+    model_team_path = Path(__file__).resolve().parents[1] / "core" / "model_team.py"
+    spec = importlib.util.spec_from_file_location("fact_bites_model_team", model_team_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load model team module from {model_team_path}")
+    model_team = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = model_team
+    spec.loader.exec_module(model_team)
+    consult_team = model_team.consult_team
+    synthesize_replies = model_team.synthesize_replies
+    ModelTeamError = model_team.ModelTeamError
+except Exception as exc:
     consult_team = None
     synthesize_replies = None
     ModelTeamError = RuntimeError
+    AI_REVIEW_IMPORT_ERROR = f"{type(exc).__name__}: {exc}"
 
 W, H, FPS = 1080, 1920, 30
 OUT = Path("output")
@@ -108,7 +120,13 @@ def optional_ai_review(narration):
         print("AI_REVIEW=disabled")
         return
     if consult_team is None:
-        print("AI_REVIEW=unavailable (model team module could not be imported)")
+        report = OUT / "AI-Peer-Review.txt"
+        report.write_text(
+            f"AI review module could not be loaded: {AI_REVIEW_IMPORT_ERROR}\\n",
+            encoding="utf-8",
+        )
+        print(f"AI_REVIEW=unavailable ({AI_REVIEW_IMPORT_ERROR})")
+        print(f"AI_REVIEW_REPORT={report}")
         return
     system = (
         "You are a strict documentary fact-check and short-form video editor. "
