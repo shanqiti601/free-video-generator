@@ -120,10 +120,10 @@ def optional_ai_review(narration):
         reviews = consult_team(system, narration)
         report = OUT / "AI-Peer-Review.txt"
         report.write_text(
-            "\\n\\n".join(
-                f"--- {item['provider']} ({item['model']}) ---\\n{item['text']}"
+            "\n\n".join(
+                f"--- {item['provider']} ({item['model']}) ---\n{item['text']}"
                 for item in reviews
-            ) + "\\n",
+            ) + "\n",
             encoding="utf-8",
         )
         print(f"AI_REVIEW=completed ({len(reviews)} free model responses)")
