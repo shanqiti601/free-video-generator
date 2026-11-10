@@ -39,17 +39,11 @@ These habitats can be slow to develop. In the deep ocean, many organisms grow sl
 
 Far above, the ocean's surface continues to send material downward. Tiny fragments of dead plankton, mucus, waste, and other organic matter drift through the water column. Scientists call this marine snow. It falls slowly through the darkness, carrying energy from surface ecosystems to animals living far below the sunlit layer. What looks like a gentle snowfall is, in fact, an important food supply for much of the deep ocean.
 
-The supply is uneven. Some places receive more falling material than others, and storms or seasonal blooms at the surface can influence what reaches the depths. Many deep-sea animals have adapted to long periods when food is scarce. Some wait, some move over large distances, and others feed on whatever reaches the seabed. This connection between the surface and the deep reminds us that the ocean is one connected system.
-
 But not every deep-sea community depends on food falling from above. At hydrothermal vents, seawater seeps into cracks in the ocean crust, is heated by hot rock, and returns carrying dissolved chemicals. When this fluid meets cold seawater, minerals can form dramatic chimney-like structures. The surrounding water may shimmer with heat, while the seafloor hosts communities adapted to this unusual environment.
 
 Here, the foundation of the food web is different. Microorganisms use chemical energy to build organic matter, a process known as chemosynthesis. Instead of relying directly on sunlight, these microbes use energy from chemical reactions. Other organisms can depend on them, creating communities in places where sunlight never arrives. Hydrothermal vents reveal that life can thrive using energy sources beyond the familiar power of the sun.
 
 An exploration vehicle such as NOAA's Deep Discoverer allows scientists to study these remote places without sending people into the crushing pressure. Cameras, lights, and sampling tools are controlled from a ship at the surface. Operators guide the vehicle slowly across the seabed, watching for animals, geological formations, and signs of habitats that may never have been documented before.
-
-The vehicle's view is still only a small window. A camera can show what lies directly in front of it, but much of the deep ocean remains difficult to reach and observe. Each dive is planned carefully, and each discovery raises new questions. What lives beyond the edge of the lights? How are these habitats connected? Which species remain unknown?
-
-The deep ocean is also important to the wider planet. It stores heat and carbon, supports complex food webs, and contains ecosystems that scientists are only beginning to understand. Learning how these systems work helps us understand the ocean as a whole, including the ways human activity may affect even its most remote regions.
 
 Every image adds another piece to the picture. Every sample and observation helps researchers build a better understanding of life under extreme conditions. The more we explore, the clearer it becomes that the deep is not a lifeless void. It is a living world of extraordinary adaptations, fragile habitats, and connections that reach all the way to the surface.
 
