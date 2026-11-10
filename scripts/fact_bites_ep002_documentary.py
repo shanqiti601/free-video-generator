@@ -8,7 +8,7 @@ ROOT.mkdir(parents=True,exist_ok=True); ASSETS.mkdir(exist_ok=True); SEG.mkdir(e
 SOURCES={
 "C01":"https://oceanexplorer.noaa.gov/wp-content/uploads/2025/09/dive05-coral-polyp.mp4",
 "C02":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/05/sedci-1920x1080-1.mp4",
-"C03":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1711/dailyupdates/media/video/architects/architects-1280x720.mp4",
+"C03":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1907/dailyupdates/coral-garden/coral-garden-1280x720.mp4",
 "C04":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1907/dailyupdates/coral-garden/coral-garden-1280x720.mp4",
 "C05":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex2107/gallery/media/million-mounds-1280x720.mp4",
 "C06":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/08/reef-conversation-1920x1080-1.mp4",
