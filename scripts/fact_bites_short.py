@@ -38,11 +38,11 @@ OUT = Path("output")
 NOAA_URL = "https://oceanexplorer.noaa.gov/wp-content/uploads/2018/06/greenland-mp4.mp4"
 VOICE_CANDIDATES = ["en-GB-RyanNeural", "en-US-ChristopherNeural", "en-GB-ThomasNeural"]
 
-HOOK = "Some Greenland sharks alive today may have been born before the first photograph was ever taken."
-FACT = "Deep beneath the Arctic waves, the Greenland shark moves through darkness. Scientists estimate that some may live for nearly four centuries."
-SCIENCE = "In a study published in the journal Science, researchers used radiocarbon dating in the eye lenses of 28 Greenland sharks. The largest was estimated to be about 392 years old — with a wide margin of uncertainty."
-TWIST = "And here is the astonishing part: females may not reach sexual maturity until around 156 years of age. A shark could spend more than a century simply growing up."
-END = "A living witness to centuries of history... hidden in the coldest depths of the ocean. Follow Fact Bites for discoveries most people never hear about."
+HOOK = "Some Greenland sharks may live for centuries. But how old can they really get?"
+FACT = "They move slowly through the cold waters of the North Atlantic and Arctic, growing over many decades."
+SCIENCE = "In a study published in Science, researchers examined the eye lenses of 28 Greenland sharks. The largest was estimated to be about 392 years old — plus or minus roughly 120 years. That is a very wide range, not an exact birthday."
+TWIST = "The study also estimated that females reach sexual maturity at about 156 years old, with an uncertainty of roughly 22 years. Growing up can take more than a century."
+END = "A remarkable animal, measured in centuries rather than decades. Follow Fact Bites for discoveries most people never hear about."
 
 def run(cmd):
     subprocess.run(cmd, check=True)
@@ -72,10 +72,14 @@ def write_ass(text, seconds, path):
         "Style: Brand,DejaVu Sans,58,&H0000D7FF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,3,1,8,90,90,100,1",
         "Style: Intro,DejaVu Sans,62,&H00FFFFFF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,4,2,8,100,100,245,1",
         "Style: EndCard,DejaVu Sans,76,&H00FFFFFF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,4,2,5,90,90,0,1",
+        "Style: Fact,DejaVu Sans,40,&H0000F2FF,&H0000F2FF,&H00101A29,&HCC071321,1,0,0,0,100,100,1,0,1,3,1,7,78,78,260,1",
         "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
         f"Dialogue: 1,0:00:00.00,{ass_time(seconds + 3.0)},Brand,,0,0,0,,FACT BITES",
         f"Dialogue: 2,0:00:00.00,0:00:04.00,Intro,,0,0,0,,THE SHARK THAT CAN LIVE FOR CENTURIES",
-        f"Dialogue: 3,{ass_time(seconds + 0.2)},{ass_time(seconds + 3.2)},EndCard,,0,0,0,,FACT BITES\\NREAL STORIES. EXTRAORDINARY FACTS."
+        f"Dialogue: 3,{ass_time(seconds + 0.2)},{ass_time(seconds + 3.2)},EndCard,,0,0,0,,FACT BITES\\NREAL STORIES. EXTRAORDINARY FACTS.",
+        f"Dialogue: 4,{ass_time(voice_len * 0.12)},{ass_time(voice_len * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  SLOW-GROWING GIANT",
+        f"Dialogue: 4,{ass_time(voice_len * 0.39)},{ass_time(voice_len * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
+        f"Dialogue: 4,{ass_time(voice_len * 0.68)},{ass_time(voice_len * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS"
     ]
     total = max(1, len(words)); cursor = 0
     for chunk in chunks:
@@ -206,7 +210,7 @@ def main():
         vf = (
             "scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
             "crop=1080:1920,"
-            "hqdn3d=1.2:1.2:4:4,eq=contrast=1.06:saturation=1.18:brightness=0.12:gamma=1.12,"
+            "hqdn3d=1.0:1.0:3:3,eq=contrast=1.03:saturation=1.12:brightness=0.19:gamma=1.22:gamma_weight=0.85,"
             "unsharp=7:7:0.55:5:5:0.0,setsar=1,format=yuv420p"
         )
         # Skip NOAA's original black title slate so the story opens on actual underwater footage.
