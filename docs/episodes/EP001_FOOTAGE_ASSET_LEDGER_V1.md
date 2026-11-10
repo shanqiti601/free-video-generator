@@ -11,6 +11,8 @@
 | FB-EP001-A03 | Chapter 5 — hydrothermal vent reveal | https://oceanexplorer.noaa.gov/multimedia/edu-themes-vents-and-volcanoes-media-video-multimedia-hydrothermal/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2019/06/0501-hydrothermal-vents-1920x1080-1.mp4 | NOAA Ocean Exploration, 2016 Deepwater Exploration of the Marianas | 72.1 MiB | Downloaded; H.264, 1920×1080, 29.97 fps, 65.707 s; sampled frame shows vent-associated seafloor fauna; SHA-256 `f99f735f520b93706c029f4b5f24df99d07bc9ae07d3afe527dd587375b7a438` |
 | FB-EP001-A04 | Chapter 4 — deep-sea sponge / seafloor life | https://oceanexplorer.noaa.gov/multimedia/largest-sponge-ever-found/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2026/10/largest-sponge-ever-found.mp4 | NOAA Ocean Exploration, 2015 Hohonu Moana | 60.1 MiB; HD download | Downloaded; H.264, 1920×1080, 29.97 fps, 121.488 s; mid-clip frame confirms large sponge at 2,117 m; initial sample contains a title slate; SHA-256 `5a4c71fb9571a4a1e5c7a5bf9be4bc162af8fc49afa7efc5f3a3e062decd2b84` |
 | FB-EP001-A05 | Chapter 4 — deep-sea octopus / color adaptation | https://oceanexplorer.noaa.gov/multimedia/okeanos-explorations-seascape-alaska-ex2306-gallery-media-dive08-changingcolors/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2023/10/dive08-changingColors-1280x720-1.mp4 | NOAA Ocean Exploration, Seascape Alaska | 60.7 MiB; HD download | Downloaded; H.264, 1280×720, 29.97 fps, 59.459 s; mid-clip frame confirms octopus close-up; initial sample contains a title card; SHA-256 `c970cda14b181ded733ad3e9f5f74d13867b2e3ac68a185d663d80f94fa0792d` |
+| FB-EP001-A06 | Chapter 4 — bioluminescence science/visual candidate | https://oceanexplorer.noaa.gov/multimedia/edu-resources-dsd-bioluminescence/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2021/10/bioluminescence-640x360-1.mp4 | NOAA Ocean Exploration | SD, 77.5 MB per source page; download step completed, technical QC pending in run 42844464898 |
+| FB-EP001-A07 | Chapter 7 — ROV exploration candidate | https://oceanexplorer.noaa.gov/technology/subs-deep-discoverer/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2018/09/d2-1280x720-2.mp4 | NOAA Ocean Exploration, Gulf of Mexico 2017 | 119.2 MB per source page; download step completed, technical QC pending in run 42844464898 |
 
 
 ## Rights and attribution gate
@@ -57,3 +59,11 @@ These five clips now provide verified technical candidates for marine snow, a gi
 - New A04/A05 mid-clip frames were separately extracted and visually inspected: A04 shows the large sponge structure; A05 shows an octopus close-up. Their initial 3-second samples are title overlays, so the editor must use clean mid-clip ranges after full review.
 - Measured combined duration across A01–A05: approximately 316.75 seconds. A04 is native 1920×1080; A05 is 1280×720. No 4K footage has been acquired.
 - Technical QC passed does not mean the complete clips have been watched or final editorial/rights clearance has been granted.
+
+
+## Pending candidate intake — 2026-11-10
+
+- Added A06 (NOAA Deep-Sea Dialogues: Bioluminescence, SD 640×360 download) and A07 (NOAA Deep Discoverer ROV, 1280×720 download) to the intake workflow. NOAA source pages state their credits and published download sizes.
+- Workflow run [42844464898](https://github.com/shanqiti601/free-video-generator/actions/runs/42844464898) completed its download step successfully; ffprobe and representative-frame extraction are still running. Do not count A06/A07 as QC-passed or picture-approved until that run finishes and the frames/metadata are inspected.
+- A06 is standard-definition; it may be useful only for a short, appropriately framed insert if its visual quality is acceptable. Do not upscale and call it HD/4K.
+- A07 is a candidate ROV shot; its source page says Deep Discoverer can dive to 6,000 m and records HD video, but exact downloaded clip content must be visually checked before use.
