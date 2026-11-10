@@ -1,0 +1,59 @@
+name: FACT BITES EP002 — Documentary Render
+
+on:
+  push:
+    paths:
+      - 'scripts/fact_bites_ep002_documentary.py'
+      - '.github/workflows/fact-bites-ep002-documentary.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fact-bites-ep002-documentary
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FFmpeg and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free narration engine
+        run: python -m pip install edge-tts
+      - name: Render original FACT BITES documentary
+        run: python scripts/fact_bites_ep002_documentary.py
+      - name: Verify MP4 integrity and audio/video streams
+        run: |
+          ffmpeg -v error -i output/Fact-Bites-EP002-The-Ancient-Forests-of-the-Deep.mp4 -f null -
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('output/ep002/FINAL-QA-FFPROBE.json')
+          d=json.loads(p.read_text())
+          streams=d['streams']
+          assert any(s.get('codec_type')=='video' for s in streams)
+          assert any(s.get('codec_type')=='audio' for s in streams)
+          assert float(d['format']['duration']) > 240
+          print('MP4_QA=PASS')
+          print('DURATION='+d['format']['duration'])
+          print('SIZE_BYTES='+str(pathlib.Path('output/Fact-Bites-EP002-The-Ancient-Forests-of-the-Deep.mp4').stat().st_size))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FACT-BITES-EP002-Documentary-MP4
+          path: |
+            output/Fact-Bites-EP002-The-Ancient-Forests-of-the-Deep.mp4
+            output/ep002/narration.mp3
+            output/ep002/captions.srt
+            output/ep002/FINAL-QA-FFPROBE.json
+          if-no-files-found: error
+          retention-days: 7
