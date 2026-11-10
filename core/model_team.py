@@ -39,12 +39,11 @@ class Provider:
 
 
 PROVIDERS = (
+    # Gemini 3.8 Flash is listed on Google's current API pricing page as free-tier.
     Provider("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
              "GEMINI_API_KEY", "GEMINI_FREE_MODEL", "gemini-3.8-flash",
              free_model_ids=("gemini-3.8-flash",)),
-    Provider("Groq", "https://api.groq.com/openai/v1/chat/completions",
-             "GROQ_API_KEY", "GROQ_FREE_MODEL", "openai/gpt-oss-120b",
-             free_model_ids=("openai/gpt-oss-120b",)),
+    # OpenRouter is accepted only when the selected model is explicitly marked free.
     Provider("OpenRouter", "https://openrouter.ai/api/v1/chat/completions",
              "OPENROUTER_API_KEY", "OPENROUTER_FREE_MODEL", "openrouter/free",
              free_only_suffix=":free"),
@@ -114,7 +113,7 @@ def consult_team(system: str, prompt: str, max_workers: int = 3):
             continue
     if not configured:
         raise ModelTeamError(
-            "No free model providers configured. Add Gemini, Groq, or "
+            "No free model providers configured. Add Gemini or "
             "OpenRouter free-model keys as environment secrets."
         )
     results, errors = [], []
