@@ -55,8 +55,6 @@ jobs:
       - name: Generate documentary short
         env:
           FACT_BITES_AI_REVIEW: "1"
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_FREE_MODEL: ${{ vars.GEMINI_FREE_MODEL }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_FREE_MODEL: ${{ vars.OPENROUTER_FREE_MODEL }}
           FREELLMAPI_BASE_URL: ${{ secrets.FREELLMAPI_BASE_URL }}
