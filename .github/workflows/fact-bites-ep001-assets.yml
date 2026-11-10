@@ -67,3 +67,4 @@ jobs:
             reports/ep001/*
           if-no-files-found: error
           retention-days: 7
+# Trigger workflow after initial registration.
