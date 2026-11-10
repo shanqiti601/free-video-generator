@@ -81,8 +81,8 @@ async def narration():
     for i,g in enumerate(captions,1):
         start=max(0,g[0][0]-0.03); end=max(start+0.5,g[-1][1]+0.12)
         line=" ".join(x[2] for x in g)
-        blocks.append(f"{i}\\n{srt_timestamp(start)} --> {srt_timestamp(end)}\\n{line}\\n")
-    srt.write_text("\\n".join(blocks),encoding="utf-8")
+        blocks.append(f"{i}\n{srt_timestamp(start)} --> {srt_timestamp(end)}\n{line}\n")
+    srt.write_text("\n".join(blocks),encoding="utf-8")
     return p,srt
 def make_segment(src,start,dur,out,label):
     # Fit the source to a cinematic 1080p frame without stretching; restrained label.
