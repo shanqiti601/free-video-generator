@@ -11,8 +11,8 @@
 | FB-EP001-A03 | Chapter 5 — hydrothermal vent reveal | https://oceanexplorer.noaa.gov/multimedia/edu-themes-vents-and-volcanoes-media-video-multimedia-hydrothermal/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2019/06/0501-hydrothermal-vents-1920x1080-1.mp4 | NOAA Ocean Exploration, 2016 Deepwater Exploration of the Marianas | 72.1 MiB | Downloaded; H.264, 1920×1080, 29.97 fps, 65.707 s; sampled frame shows vent-associated seafloor fauna; SHA-256 `f99f735f520b93706c029f4b5f24df99d07bc9ae07d3afe527dd587375b7a438` |
 | FB-EP001-A04 | Chapter 4 — deep-sea sponge / seafloor life | https://oceanexplorer.noaa.gov/multimedia/largest-sponge-ever-found/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2026/10/largest-sponge-ever-found.mp4 | NOAA Ocean Exploration, 2015 Hohonu Moana | 60.1 MiB; HD download | Downloaded; H.264, 1920×1080, 29.97 fps, 121.488 s; mid-clip frame confirms large sponge at 2,117 m; initial sample contains a title slate; SHA-256 `5a4c71fb9571a4a1e5c7a5bf9be4bc162af8fc49afa7efc5f3a3e062decd2b84` |
 | FB-EP001-A05 | Chapter 4 — deep-sea octopus / color adaptation | https://oceanexplorer.noaa.gov/multimedia/okeanos-explorations-seascape-alaska-ex2306-gallery-media-dive08-changingcolors/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2023/10/dive08-changingColors-1280x720-1.mp4 | NOAA Ocean Exploration, Seascape Alaska | 60.7 MiB; HD download | Downloaded; H.264, 1280×720, 29.97 fps, 59.459 s; mid-clip frame confirms octopus close-up; initial sample contains a title card; SHA-256 `c970cda14b181ded733ad3e9f5f74d13867b2e3ac68a185d663d80f94fa0792d` |
-| FB-EP001-A06 | Chapter 4 — bioluminescence science/visual candidate | https://oceanexplorer.noaa.gov/multimedia/edu-resources-dsd-bioluminescence/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2021/10/bioluminescence-640x360-1.mp4 | NOAA Ocean Exploration | SD, 77.5 MB per source page; download step completed, technical QC pending in run 42844464898 |
-| FB-EP001-A07 | Chapter 7 — ROV exploration candidate | https://oceanexplorer.noaa.gov/technology/subs-deep-discoverer/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2018/09/d2-1280x720-2.mp4 | NOAA Ocean Exploration, Gulf of Mexico 2017 | 119.2 MB per source page; download step completed, technical QC pending in run 42844464898 |
+| FB-EP001-A06 | Background research only; not approved as cinematic animal footage | https://oceanexplorer.noaa.gov/multimedia/edu-resources-dsd-bioluminescence/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2021/10/bioluminescence-640x360-1.mp4 | NOAA Ocean Exploration | Downloaded; H.264, 640×360, 29.97 fps, 483.750 s; sampled frames show shoreline/interview/educational graphics. Exclude from cinematic picture edit unless a specific clean usable segment is found. SHA-256 `bbfdbac57e92ae681cfd0e563afcec90aa18fdfcc30887e7a1bb261d273cd061` |
+| FB-EP001-A07 | Chapter 6 — deep-sea exploration and animal reveals | https://oceanexplorer.noaa.gov/technology/subs-deep-discoverer/ | https://oceanexplorer.noaa.gov/wp-content/uploads/2018/09/d2-1280x720-2.mp4 | NOAA Ocean Exploration, Gulf of Mexico 2017 | Downloaded; H.264, 1280×720, 29.97 fps, 302.769 s; sampled at 180 s shows a deep-sea fish on the seafloor. Full-clip review and precise in/out selection still required. SHA-256 `0b9af380ee61e5b79d9f07aa217c255ba0253d2e64bf3323c44dba738be68dbd` |
 
 
 ## Rights and attribution gate
@@ -27,8 +27,10 @@ Reference: https://oceanexplorer.noaa.gov/about/media-kit/
 - [x] Record actual byte size and SHA-256 checksum for A01–A05.
 - [x] Run ffprobe and record exact width, height, frame rate, codec, duration, and pixel format for A01–A05.
 - [ ] Watch the complete clips; select only relevant time ranges.
-- [x] Sample representative frames; confirm A01 particle field, A02 giant grenadier source slate/animal, A03 vent-associated fauna, A04 large sponge, and A05 octopus close-up. Mid-clip samples for A04/A05 avoid their opening title slates.
+- [x] Sample representative frames; confirm A01 particle field, A02 giant grenadier source slate/animal, A03 vent-associated fauna, A04 large sponge, A05 octopus close-up, and A07 deep-sea fish. Mid-clip samples for A04/A05 avoid their opening title slates.
+- [x] Inspect A06 at 240 s: educational interview/graphic layout, not clean cinematic bioluminescent animal footage; exclude from the picture edit by default.
 - [ ] Confirm credit and reuse terms for each exact asset before final export.
+- [x] Run automated technical QC for A01–A07; all seven downloads passed ffprobe and frame extraction.
 - [ ] Do not upscale and describe it as native 4K.
 - [ ] Keep any clip that fails a check out of the edit.
 
@@ -67,3 +69,13 @@ These five clips now provide verified technical candidates for marine snow, a gi
 - Workflow run [42844464898](https://github.com/shanqiti601/free-video-generator/actions/runs/42844464898) completed its download step successfully; ffprobe and representative-frame extraction are still running. Do not count A06/A07 as QC-passed or picture-approved until that run finishes and the frames/metadata are inspected.
 - A06 is standard-definition; it may be useful only for a short, appropriately framed insert if its visual quality is acceptable. Do not upscale and call it HD/4K.
 - A07 is a candidate ROV shot; its source page says Deep Discoverer can dive to 6,000 m and records HD video, but exact downloaded clip content must be visually checked before use.
+
+
+## Final expanded acquisition and visual spot-check — 2026-11-10
+
+- Workflow [42844464898](https://github.com/shanqiti601/free-video-generator/actions/runs/42844464898) completed successfully; job `acquire-and-inspect` and all six steps concluded success.
+- Artifact `Fact-Bites-EP001-NOAA-Asset-QC`, ID `13777437516`, size 436,059,924 bytes, expires 2026-11-17.
+- Artifact downloaded and extracted for inspection. Contains seven original MP4 files, seven representative frame images, FFprobe report, file sizes, and SHA-256 manifest.
+- Measured metadata: A06 is 640×360 and 483.750 s; A07 is 1280×720 and 302.769 s. A07 sampled at 180 s shows a deep-sea fish on the seafloor. A06 sampled at 240 s shows a scientist interview with educational graphics; a frame near the start shows a shoreline. It is not a clean cinematic animal sequence and is not approved as the episode's bioluminescence visuals.
+- Technical QC is complete for all seven files. It is not full editorial review, nor final rights confirmation.
+- Native picture ceiling remains 1920×1080 because only A03/A04 are 1080p; A01/A02/A05/A07 are 720p and A06 is 360p. Do not claim native 4K.
