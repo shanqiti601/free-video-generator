@@ -46,8 +46,8 @@ def main():
     run(["ffmpeg", "-v", "error", "-i", str(VIDEO), "-f", "null", "-"])
     checks.extend(["FULL_DECODE=PASS", "TECHNICAL_QA=PASS"])
     REPORT.parent.mkdir(parents=True, exist_ok=True)
-    REPORT.write_text("\\n".join(checks) + "\\n", encoding="utf-8")
-    print("\\n".join(checks))
+    REPORT.write_text("\n".join(checks) + "\n", encoding="utf-8")
+    print("\n".join(checks))
 
 
 if __name__ == "__main__":

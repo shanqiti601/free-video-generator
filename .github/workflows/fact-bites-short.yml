@@ -4,7 +4,10 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - 'scripts/fact_bites_short.py'\n      - 'scripts/qa_fact_bites.py'\n      - 'CLAUDE.md'\n      - '.claude/skills/**'
+      - 'scripts/fact_bites_short.py'
+      - 'scripts/qa_fact_bites.py'
+      - 'CLAUDE.md'
+      - '.claude/skills/**'
       - 'core/model_team.py'
       - 'FACT_BITES_AGENTS.md'
       - '.agents/skills/**'
@@ -63,12 +66,15 @@ jobs:
           FREELLMAPI_API_KEY: ${{ secrets.FREELLMAPI_API_KEY }}
           FREELLMAPI_FREE_MODEL: ${{ vars.FREELLMAPI_FREE_MODEL }}
         run: python scripts/fact_bites_short.py
-      - name: Run final technical video QA\n        run: python scripts/qa_fact_bites.py\n      - name: Save MP4 for download
+      - name: Run final technical video QA
+        run: python scripts/qa_fact_bites.py
+      - name: Save MP4 for download
         uses: actions/upload-artifact@v4
         with:
           name: Fact-Bites-Documentary
           path: |
             output/Fact-Bites-Short.mp4
-            output/AI-Peer-Review.txt\n            output/Video-QA.txt
+            output/AI-Peer-Review.txt
+            output/Video-QA.txt
           if-no-files-found: error
           retention-days: 7

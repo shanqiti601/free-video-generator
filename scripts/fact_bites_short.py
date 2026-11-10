@@ -74,7 +74,7 @@ def write_ass(seconds, path):
         f"Dialogue: 2,{ass_time(seconds * 0.39)},{ass_time(seconds * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
         f"Dialogue: 2,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS",
     ]
-    path.write_text("\\n".join(rows) + "\\n", encoding="utf-8")
+    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 async def make_voice(text, path):
     last = None
@@ -203,7 +203,7 @@ def main():
         make_shot(f"story_{i+1}.mp4", 12.0 + (i * usable) / 3, segment)
 
     concat = OUT / "shots.txt"
-    concat.write_text("".join(f"file '{x.resolve()}'\\n" for x in clips), encoding="utf-8")
+    concat.write_text("".join(f"file '{x.resolve()}'\n" for x in clips), encoding="utf-8")
     silent = OUT / "documentary_silent.mp4"
     run(["ffmpeg","-y","-loglevel","error","-f","concat","-safe","0","-i",str(concat),
          "-c","copy","-t",f"{target:.2f}",str(silent)])
