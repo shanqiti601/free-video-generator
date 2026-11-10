@@ -196,11 +196,29 @@ def main():
              "-crf","18","-pix_fmt","yuv420p",str(clip)])
         clips.append(clip)
 
-    hook_positions = [12.0, 12.0 + usable * 0.38, 12.0 + usable * 0.76]
+    # The NOAA clip's strongest shark encounters occur after the opening slate.
+    # Favor the two encounter windows instead of wasting the hook on empty blue water.
+    shark_window_a = 12.0 + usable / 3
+    shark_window_b = 12.0 + usable
+    def safe_start(preferred, duration):
+        latest = max(12.0, source_len - duration - 0.2)
+        return max(12.0, min(preferred, latest))
+
+    hook_positions = [
+        safe_start(shark_window_a, intro_durations[0]),
+        safe_start(shark_window_a + 4.0, intro_durations[1]),
+        safe_start(shark_window_b - 2.0, intro_durations[2]),
+    ]
     for i, duration in enumerate(intro_durations):
         make_shot(f"hook_{i+1}.mp4", hook_positions[i], duration)
-    for i in range(4):
-        make_shot(f"story_{i+1}.mp4", 12.0 + (i * usable) / 3, segment)
+    story_positions = [
+        safe_start(shark_window_a + 8.0, segment),
+        safe_start(shark_window_b - 10.0, segment),
+        safe_start(shark_window_a + 13.0, segment),
+        safe_start(shark_window_b - 4.0, segment),
+    ]
+    for i, start in enumerate(story_positions):
+        make_shot(f"story_{i+1}.mp4", start, segment)
 
     concat = OUT / "shots.txt"
     concat.write_text("".join(f"file '{x.resolve()}'\n" for x in clips), encoding="utf-8")

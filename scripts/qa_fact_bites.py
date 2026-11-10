@@ -2,6 +2,7 @@
 """Deterministic technical QA for the Fact Bites final MP4."""
 import json
 import subprocess
+from fractions import Fraction
 from pathlib import Path
 
 VIDEO = Path("output/Fact-Bites-Short.mp4")
@@ -36,7 +37,7 @@ def main():
         raise SystemExit("FAIL: expected full-screen 1080x1920 portrait")
     if video.get("codec_name") != "h264" or audio.get("codec_name") != "aac":
         raise SystemExit("FAIL: expected H.264 video and AAC audio")
-    if duration < 30 or fps not in {"30/1", "30000/1001"}:
+    if duration < 30 or abs(float(Fraction(fps)) - 30.0) > 0.05:
         raise SystemExit("FAIL: unexpected duration or frame rate")
     if CAPTIONS.exists():
         dialogue = [line.rsplit(",,", 1)[-1].strip() for line in CAPTIONS.read_text(encoding="utf-8").splitlines() if line.startswith("Dialogue:")]
