@@ -213,7 +213,7 @@ def main():
         usable = max(1.0, source_len - segment * 0.85 - 12.0)
         start = 12.0 + (i * usable) / 3
         run(["ffmpeg","-y","-loglevel","error","-ss",f"{start:.2f}","-stream_loop","-1","-i",str(footage),
-             "-t",f"{segment:.2f}","-filter_complex",vf,"-map","[out]","-an","-c:v","libx264","-preset","medium",
+             "-t",f"{segment:.2f}","-vf",vf,"-an","-c:v","libx264","-preset","medium",
              "-crf","18","-pix_fmt","yuv420p",str(clip)])
         clips.append(clip)
 
