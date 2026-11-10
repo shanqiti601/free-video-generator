@@ -43,7 +43,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install edge-tts
       - name: Validate AI team and video scripts
-        run: python -m py_compile core/model_team.py scripts/fact_bites_short.py
+        run: python -m py_compile core/model_team.py scripts/fact_bites_short.py scripts/qa_fact_bites.py
       - name: Validate portable and Claude Code skills
         run: |
           python - <<'PY'

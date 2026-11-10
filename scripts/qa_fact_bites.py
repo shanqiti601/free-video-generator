@@ -39,7 +39,7 @@ def main():
     if duration < 30 or fps not in {"30/1", "30000/1001"}:
         raise SystemExit("FAIL: unexpected duration or frame rate")
     if CAPTIONS.exists():
-        dialogue = [line.split(",,", 1)[-1].strip() for line in CAPTIONS.read_text(encoding="utf-8").splitlines() if line.startswith("Dialogue:")]
+        dialogue = [line.rsplit(",,", 1)[-1].strip() for line in CAPTIONS.read_text(encoding="utf-8").splitlines() if line.startswith("Dialogue:")]
         if any(not text.startswith(("FACT BITES", "FACT BITE")) for text in dialogue):
             raise SystemExit("FAIL: unexpected on-screen copy outside Fact Bites identity/cards")
         checks.append(f"ON_SCREEN_COPY_LINES={len(dialogue)}")
