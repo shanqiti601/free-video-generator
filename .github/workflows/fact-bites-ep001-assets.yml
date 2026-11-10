@@ -1,0 +1,69 @@
+name: Fact Bites EP001 — NOAA Asset Intake & QC
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fact-bites-ep001-assets.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fact-bites-ep001-assets
+  cancel-in-progress: false
+
+jobs:
+  acquire-and-inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Prepare workspace
+        run: mkdir -p assets/ep001/noaa reports/ep001
+
+      - name: Download small NOAA candidate clips
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd assets/ep001/noaa
+          curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 300 -o A01_marine_snow.mp4 "https://oceanexplorer.noaa.gov/wp-content/uploads/2013/10/marine-snow-1920x1080-1.mp4"
+          curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 300 -o A02_giant_grenadier.mp4 "https://oceanexplorer.noaa.gov/wp-content/uploads/2023/07/dive08-fish-1280x720-1.mp4"
+          curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 300 -o A03_hydrothermal_vent.mp4 "https://oceanexplorer.noaa.gov/wp-content/uploads/2019/06/0501-hydrothermal-vents-1920x1080-1.mp4"
+
+      - name: Probe media and extract representative frames
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          {
+            echo "# EP001 NOAA Asset Technical QC"
+            echo
+            echo "Generated: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+            echo
+            for f in assets/ep001/noaa/*.mp4; do
+              echo "## $(basename "$f")"
+              echo
+              echo '```json'
+              ffprobe -v error -show_entries format=duration,size,format_name:stream=codec_name,codec_type,width,height,r_frame_rate,pix_fmt -of json "$f"
+              echo '```'
+              echo
+            done
+          } > reports/ep001/technical-qc.md
+          for f in assets/ep001/noaa/*.mp4; do
+            base="$(basename "$f" .mp4)"
+            ffmpeg -hide_banner -loglevel error -ss 00:00:03 -i "$f" -frames:v 1 -vf "scale=960:-1" "reports/ep001/${base}_frame.jpg"
+          done
+          sha256sum assets/ep001/noaa/*.mp4 > reports/ep001/SHA256SUMS.txt
+          du -h assets/ep001/noaa/*.mp4 > reports/ep001/file-sizes.txt
+
+      - name: Upload source clips and QC evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: Fact-Bites-EP001-NOAA-Asset-QC
+          path: |
+            assets/ep001/noaa/*.mp4
+            reports/ep001/*
+          if-no-files-found: error
+          retention-days: 7
