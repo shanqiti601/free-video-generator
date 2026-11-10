@@ -77,9 +77,9 @@ def write_ass(text, seconds, path):
         f"Dialogue: 1,0:00:00.00,{ass_time(seconds + 3.0)},Brand,,0,0,0,,FACT BITES",
         f"Dialogue: 2,0:00:00.00,0:00:04.00,Intro,,0,0,0,,THE SHARK THAT CAN LIVE FOR CENTURIES",
         f"Dialogue: 3,{ass_time(seconds + 0.2)},{ass_time(seconds + 3.2)},EndCard,,0,0,0,,FACT BITES\\NREAL STORIES. EXTRAORDINARY FACTS.",
-        f"Dialogue: 4,{ass_time(voice_len * 0.12)},{ass_time(voice_len * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  SLOW-GROWING GIANT",
-        f"Dialogue: 4,{ass_time(voice_len * 0.39)},{ass_time(voice_len * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
-        f"Dialogue: 4,{ass_time(voice_len * 0.68)},{ass_time(voice_len * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS"
+        f"Dialogue: 4,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  SLOW-GROWING GIANT",
+        f"Dialogue: 4,{ass_time(seconds * 0.39)},{ass_time(seconds * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
+        f"Dialogue: 4,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS"
     ]
     total = max(1, len(words)); cursor = 0
     for chunk in chunks:
