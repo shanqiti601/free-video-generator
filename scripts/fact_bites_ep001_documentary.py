@@ -49,6 +49,8 @@ Every image adds another piece to the picture. Every sample and observation help
 
 Beneath the waves, most of this world remains unseen. But with every careful dive, its hidden story comes into view.
 
+And the discoveries do not end when a vehicle returns to the surface. Scientists compare observations, map habitats, and revisit locations to understand how these ecosystems change over time. Some questions take years to answer. Others begin with a single image of an unfamiliar animal passing through the lights. Each expedition reminds us how much remains beyond our view, and why careful exploration matters. The deep ocean is connected to the rest of the planet, and protecting it begins with understanding it.
+
 This is FACT BITES."""
 async def narration():
     p=ROOT/"narration.mp3"
