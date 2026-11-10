@@ -82,7 +82,28 @@ async def narration():
         start=max(0,g[0][0]-0.03); end=max(start+0.5,g[-1][1]+0.12)
         line=" ".join(x[2] for x in g)
         blocks.append(f"{i}\n{srt_timestamp(start)} --> {srt_timestamp(end)}\n{line}\n")
-    srt.write_text("\n".join(blocks),encoding="utf-8")
+    # Always produce a valid subtitle file, even if the TTS provider omits WordBoundary events.
+    if not blocks:
+        duration=probe_duration(p)
+        tokens=SCRIPT.split()
+        groups=[]; current=[]
+        for token in tokens:
+            candidate=" ".join(current+[token])
+            if current and (len(current)>=8 or len(candidate)>42):
+                groups.append(current); current=[]
+            current.append(token)
+        if current: groups.append(current)
+        total=sum(len(g) for g in groups) or 1
+        elapsed=0.0
+        for i,g in enumerate(groups,1):
+            start=duration*elapsed/total
+            elapsed+=len(g)
+            end=duration*elapsed/total
+            blocks.append(f"{i}\\n{srt_timestamp(start)} --> {srt_timestamp(end)}\\n{' '.join(g)}\\n")
+    srt.write_text("\\n".join(blocks),encoding="utf-8")
+    if not srt.is_file() or srt.stat().st_size==0:
+        raise RuntimeError("Subtitle file was not created")
+    print("SUBTITLE_FILE="+str(srt.resolve())+" SIZE="+str(srt.stat().st_size),flush=True)
     return p,srt
 def make_segment(src,start,dur,out,label):
     # Fit the source to a cinematic 1080p frame without stretching; restrained label.
