@@ -2,6 +2,10 @@ name: Build Fact Bites Documentary Short
 
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/fact_bites_short.py'
+      - '.github/workflows/fact-bites-short.yml'
 
 permissions:
   contents: read
