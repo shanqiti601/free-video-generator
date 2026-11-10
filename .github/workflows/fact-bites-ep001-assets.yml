@@ -34,6 +34,7 @@ jobs:
           curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 300 -o A05_changing_colors_octopuses.mp4 "https://oceanexplorer.noaa.gov/wp-content/uploads/2023/10/dive08-changingColors-1280x720-1.mp4"
           curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 300 -o A06_bioluminescence.mp4 "https://oceanexplorer.noaa.gov/wp-content/uploads/2021/10/bioluminescence-640x360-1.mp4"
           curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 300 -o A07_deep_discoverer_rov.mp4 "https://oceanexplorer.noaa.gov/wp-content/uploads/2018/09/d2-1280x720-2.mp4"
+          curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 300 -o A08_bioluminescent_shrimp.mp4 "https://oceanexplorer.noaa.gov/wp-content/uploads/2019/06/shrimp-spew-720x480-1.mp4"
 
       - name: Probe media and extract representative frames
         shell: bash
