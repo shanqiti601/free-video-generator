@@ -53,11 +53,6 @@ class Provider:
 
 
 PROVIDERS = (
-    # Keep this exact model ID on the free-tier allowlist; change only after
-    # checking Google's current model availability and pricing.
-    Provider("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-             "GEMINI_API_KEY", "GEMINI_FREE_MODEL", "gemini-3.8-flash",
-             free_model_ids=("gemini-3.8-flash",)),
     # OpenRouter's dynamic free router is the only accepted default here.
     Provider("OpenRouter", "https://openrouter.ai/api/v1/chat/completions",
              "OPENROUTER_API_KEY", "OPENROUTER_FREE_MODEL", "openrouter/free",
@@ -136,7 +131,7 @@ def consult_team(system: str, prompt: str, max_workers: int = 3):
             continue
     if not configured:
         raise ModelTeamError(
-            "No free model providers configured. Add Gemini/OpenRouter free keys, "
+            "No free model providers configured. Add an OpenRouter free key, "
             "or a FreeLLMAPI endpoint, key, and explicitly free model."
         )
     results, errors = [], []
