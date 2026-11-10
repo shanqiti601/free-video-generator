@@ -67,10 +67,10 @@ def write_ass(seconds, path):
         "[V4+ Styles]",
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
         "Style: Brand,DejaVu Sans,54,&H0000D7FF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,3,1,8,90,90,105,1",
-        "Style: Fact,DejaVu Sans,46,&H0000F2FF,&H0000F2FF,&H00101A29,&HCC071321,1,0,0,0,100,100,1,0,1,3,1,8,92,92,430,1",
+        "Style: Fact,DejaVu Sans,40,&H0000F2FF,&H0000F2FF,&H00101A29,&HCC071321,1,0,0,0,100,100,1,0,1,3,1,8,92,92,430,1",
         "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
         f"Dialogue: 1,0:00:00.00,{ass_time(min(seconds, 3.0))},Brand,,0,0,0,,FACT BITES",
-        f"Dialogue: 2,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  LIFESPAN: AT LEAST 272 YEARS",
+        f"Dialogue: 2,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  AT LEAST 272 YEARS",
         f"Dialogue: 2,{ass_time(seconds * 0.39)},{ass_time(seconds * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
         f"Dialogue: 2,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS",
     ]
@@ -123,7 +123,16 @@ def optional_ai_review(narration):
         "Do not rewrite or silently approve factual claims."
     )
     try:
-        reviews = consult_team(system, narration)
+        review_prompt = (
+            "NARRATION TO REVIEW:\\n" + narration +
+            "\\n\\nPRIMARY SOURCE CONTEXT:\\n"
+            "Nielsen et al. (2016), Science 353(6300), 702–704, DOI 10.1126/science.aaf1703. "
+            "The study used radiocarbon dating of eye-lens nuclei from 28 female Greenland sharks. "
+            "It reported a lifespan of at least 272 years; the largest specimen (502 cm) was estimated "
+            "at 392 ± 120 years; estimated age at sexual maturity was at least 156 ± 22 years "
+            "(95.4% probability range). Review whether the narration preserves these details and uncertainty."
+        )
+        reviews = consult_team(system, review_prompt)
         report = OUT / "AI-Peer-Review.txt"
         report.write_text(
             "\n\n".join(
