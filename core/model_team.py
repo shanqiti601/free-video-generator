@@ -115,8 +115,12 @@ def available_providers():
     """Return configured provider names without exposing credentials."""
     available = []
     for provider in PROVIDERS:
-        if provider.config():
-            available.append(provider.name)
+        try:
+            if provider.config():
+                available.append(provider.name)
+        except ValueError:
+            # Invalid non-free model selections are not reported as available.
+            continue
     return available
 
 
