@@ -27,7 +27,7 @@ class Provider:
         model = os.getenv(self.model_env, self.default_model).strip()
         if not key or not model:
             return None
-        if self.free_only_suffix and not model.endswith(self.free_only_suffix):
+        if self.free_only_suffix and not (model.endswith(self.free_only_suffix) or model == "openrouter/free"):
             raise ValueError(
                 f"{self.name} is restricted to model IDs ending in "
                 f"{self.free_only_suffix!r}; refusing possible paid usage."
@@ -37,7 +37,7 @@ class Provider:
 
 PROVIDERS = (
     Provider("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-             "GEMINI_API_KEY", "GEMINI_FREE_MODEL", "gemini-2.5-flash"),
+             "GEMINI_API_KEY", "GEMINI_FREE_MODEL", "gemini-3.8-flash"),
     Provider("Groq", "https://api.groq.com/openai/v1/chat/completions",
              "GROQ_API_KEY", "GROQ_FREE_MODEL", "openai/gpt-oss-120b"),
     Provider("OpenRouter", "https://openrouter.ai/api/v1/chat/completions",
