@@ -67,6 +67,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Fact-Bites-Documentary
-          path: output/Fact-Bites-Short.mp4
+          path: |
+            output/Fact-Bites-Short.mp4
+            output/AI-Peer-Review.txt
           if-no-files-found: error
           retention-days: 7
