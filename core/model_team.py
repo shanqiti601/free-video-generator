@@ -1,7 +1,7 @@
 """Zero-billing multi-provider LLM helpers.
 
-Only explicitly configured providers are called. OpenRouter is restricted to
-model IDs ending in :free. No automatic paid fallback is possible.
+Only explicitly configured providers are called. OpenRouter and FreeLLMAPI
+are restricted to explicitly free model IDs. No automatic paid fallback exists.
 """
 from __future__ import annotations
 
@@ -19,9 +19,10 @@ class Provider:
     base_url: str
     api_key_env: str
     model_env: str
-    default_model: str
+    default_model: str = ""
     free_only_suffix: str | None = None
     free_model_ids: tuple[str, ...] = ()
+    base_url_env: str | None = None
 
     def config(self):
         key = os.getenv(self.api_key_env, "").strip()
@@ -30,23 +31,41 @@ class Provider:
             return None
         if self.free_model_ids and model not in self.free_model_ids:
             raise ValueError(f"{self.name} model {model!r} is not on the configured free-only allowlist.")
-        if self.free_only_suffix and not (model.endswith(self.free_only_suffix) or model == "openrouter/free"):
+        if self.free_only_suffix and not (
+            model.endswith(self.free_only_suffix) or model == "openrouter/free"
+        ):
             raise ValueError(
-                f"{self.name} is restricted to model IDs ending in "
-                f"{self.free_only_suffix!r}; refusing possible paid usage."
+                f"{self.name} is restricted to explicitly free model IDs "
+                f"ending in {self.free_only_suffix!r}; refusing possible paid usage."
             )
-        return key, model
+        endpoint = self.base_url
+        if self.base_url_env:
+            base = os.getenv(self.base_url_env, "").strip().rstrip("/")
+            if not base:
+                return None
+            if base.endswith("/v1/chat/completions"):
+                endpoint = base
+            elif base.endswith("/v1"):
+                endpoint = base + "/chat/completions"
+            else:
+                endpoint = base + "/v1/chat/completions"
+        return key, model, endpoint
 
 
 PROVIDERS = (
-    # Gemini 3.8 Flash is listed on Google's current API pricing page as free-tier.
+    # Keep this exact model ID on the free-tier allowlist; change only after
+    # checking Google's current model availability and pricing.
     Provider("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
              "GEMINI_API_KEY", "GEMINI_FREE_MODEL", "gemini-3.8-flash",
              free_model_ids=("gemini-3.8-flash",)),
-    # OpenRouter is accepted only when the selected model is explicitly marked free.
+    # OpenRouter's dynamic free router is the only accepted default here.
     Provider("OpenRouter", "https://openrouter.ai/api/v1/chat/completions",
              "OPENROUTER_API_KEY", "OPENROUTER_FREE_MODEL", "openrouter/free",
              free_only_suffix=":free"),
+    # Optional self-hosted FreeLLMAPI gateway. The model must be explicitly
+    # marked free; the router itself does not provide free inference or keys.
+    Provider("FreeLLMAPI", "", "FREELLMAPI_API_KEY", "FREELLMAPI_FREE_MODEL",
+             free_only_suffix=":free", base_url_env="FREELLMAPI_BASE_URL"),
 )
 
 
@@ -57,8 +76,8 @@ class ModelTeamError(RuntimeError):
 def _call(provider: Provider, system: str, prompt: str, timeout: int = 45):
     configured = provider.config()
     if not configured:
-        raise ModelTeamError(f"{provider.name}: no API key configured")
-    key, model = configured
+        raise ModelTeamError(f"{provider.name}: endpoint or API key/model not configured")
+    key, model, endpoint = configured
     payload = {
         "model": model,
         "temperature": 0.4,
@@ -68,7 +87,7 @@ def _call(provider: Provider, system: str, prompt: str, timeout: int = 45):
         ],
     }
     request = urllib.request.Request(
-        provider.base_url,
+        endpoint,
         data=json.dumps(payload).encode("utf-8"),
         headers={
             "Authorization": f"Bearer {key}",
@@ -109,12 +128,12 @@ def consult_team(system: str, prompt: str, max_workers: int = 3):
             if provider.config():
                 configured.append(provider)
         except ValueError:
-            # A non-free OpenRouter model is rejected, never called.
+            # A non-free model is rejected, never called.
             continue
     if not configured:
         raise ModelTeamError(
-            "No free model providers configured. Add Gemini or "
-            "OpenRouter free-model keys as environment secrets."
+            "No free model providers configured. Add Gemini/OpenRouter free keys, "
+            "or a FreeLLMAPI endpoint, key, and explicitly free model."
         )
     results, errors = [], []
     with ThreadPoolExecutor(max_workers=min(max_workers, len(configured))) as pool:
@@ -130,6 +149,24 @@ def consult_team(system: str, prompt: str, max_workers: int = 3):
 
 
 def synthesize_with_team(system: str, prompt: str):
-    """Use the first successful free provider as a synthesis fallback."""
+    """Ask the free-model team, then have one responding provider synthesize drafts."""
     replies = consult_team(system, prompt)
+    if len(replies) == 1:
+        return replies[0]["text"]
+    synthesis_prompt = (
+        "Compare the independent model drafts below. Resolve disagreements using "
+        "only evidence present in the drafts; do not invent facts or sources. "
+        "Clearly label unresolved uncertainty. Produce one concise synthesis.\n\n"
+        + "\n\n".join(
+            f"### {item['provider']} ({item['model']})\n{item['text']}"
+            for item in replies
+        )
+    )
+    provider_by_name = {p.name: p for p in PROVIDERS}
+    for reply in replies:
+        provider = provider_by_name[reply["provider"]]
+        try:
+            return _call(provider, system, synthesis_prompt)["text"]
+        except Exception:
+            continue
     return replies[0]["text"]
