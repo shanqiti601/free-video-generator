@@ -124,8 +124,8 @@ def optional_ai_review(narration):
     )
     try:
         review_prompt = (
-            "NARRATION TO REVIEW:\\n" + narration +
-            "\\n\\nPRIMARY SOURCE CONTEXT:\\n"
+            "NARRATION TO REVIEW:\n" + narration +
+            "\n\nPRIMARY SOURCE CONTEXT:\n"
             "Nielsen et al. (2016), Science 353(6300), 702–704, DOI 10.1126/science.aaf1703. "
             "The study used radiocarbon dating of eye-lens nuclei from 28 female Greenland sharks. "
             "It reported a lifespan of at least 272 years; the largest specimen (502 cm) was estimated "
