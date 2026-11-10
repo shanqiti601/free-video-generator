@@ -152,25 +152,30 @@ def consult_team(system: str, prompt: str, max_workers: int = 3):
     return sorted(results, key=lambda item: item["provider"])
 
 
-def synthesize_with_team(system: str, prompt: str):
-    """Ask the free-model team, then have one responding provider synthesize drafts."""
-    replies = consult_team(system, prompt)
+def synthesize_replies(system: str, replies: list[dict]):
+    """Have one responding free provider reconcile already-collected peer drafts."""
+    if not replies:
+        raise ModelTeamError("No peer drafts were supplied for synthesis.")
     if len(replies) == 1:
         return replies[0]["text"]
     synthesis_prompt = (
         "Compare the independent model drafts below. Resolve disagreements using "
         "only evidence present in the drafts; do not invent facts or sources. "
-        "Clearly label unresolved uncertainty. Produce one concise synthesis.\n\n"
-        + "\n\n".join(
-            f"### {item['provider']} ({item['model']})\n{item['text']}"
+        "Clearly label unresolved uncertainty. Produce one concise synthesis.\\n\\n"
+        + "\\n\\n".join(
+            f"### {item['provider']} ({item['model']})\\n{item['text']}"
             for item in replies
         )
     )
     provider_by_name = {p.name: p for p in PROVIDERS}
     for reply in replies:
-        provider = provider_by_name[reply["provider"]]
         try:
-            return _call(provider, system, synthesis_prompt)["text"]
+            return _call(provider_by_name[reply["provider"]], system, synthesis_prompt)["text"]
         except Exception:
             continue
     return replies[0]["text"]
+
+
+def synthesize_with_team(system: str, prompt: str):
+    """Ask the free-model team, then synthesize their independent drafts."""
+    return synthesize_replies(system, consult_team(system, prompt))
