@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Build a suspense-led, vertical Fact Bites short (minimum 30 seconds)."""
+# Build profile: cinematic underwater mystery edition.
 import argparse
 import asyncio
 import math
