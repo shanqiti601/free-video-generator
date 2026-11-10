@@ -48,7 +48,7 @@ jobs:
           for name in skills:
               path = Path(name)
               body = path.read_text(encoding="utf-8")
-              if not body.startswith("---\\n") or "description:" not in body:
+              if not body.startswith("---") or "description:" not in body.split("---", 2)[1]:
                   raise SystemExit(f"Invalid Agent Skill metadata: {name}")
               print(f"SKILL_OK={name}")
           PY
@@ -57,10 +57,11 @@ jobs:
           FACT_BITES_AI_REVIEW: "1"
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_FREE_MODEL: ${{ vars.GEMINI_FREE_MODEL }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          GROQ_FREE_MODEL: ${{ vars.GROQ_FREE_MODEL }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           OPENROUTER_FREE_MODEL: ${{ vars.OPENROUTER_FREE_MODEL }}
+          FREELLMAPI_BASE_URL: ${{ secrets.FREELLMAPI_BASE_URL }}
+          FREELLMAPI_API_KEY: ${{ secrets.FREELLMAPI_API_KEY }}
+          FREELLMAPI_FREE_MODEL: ${{ vars.FREELLMAPI_FREE_MODEL }}
         run: python scripts/fact_bites_short.py
       - name: Save MP4 for download
         uses: actions/upload-artifact@v4
