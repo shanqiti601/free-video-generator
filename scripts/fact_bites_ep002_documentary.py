@@ -6,12 +6,14 @@ from edge_tts import Communicate
 ROOT=pathlib.Path("output/ep002"); ASSETS=ROOT/"assets"; SEG=ROOT/"segments"
 ROOT.mkdir(parents=True,exist_ok=True); ASSETS.mkdir(exist_ok=True); SEG.mkdir(exist_ok=True)
 SOURCES={
-"A01":"https://oceanexplorer.noaa.gov/wp-content/uploads/2013/10/marine-snow-1920x1080-1.mp4",
-"A02":"https://oceanexplorer.noaa.gov/wp-content/uploads/2023/07/dive08-fish-1280x720-1.mp4",
-"A03":"https://oceanexplorer.noaa.gov/wp-content/uploads/2019/06/0501-hydrothermal-vents-1920x1080-1.mp4",
-"A04":"https://oceanexplorer.noaa.gov/wp-content/uploads/2026/10/largest-sponge-ever-found.mp4",
-"A05":"https://oceanexplorer.noaa.gov/wp-content/uploads/2023/10/dive08-changingColors-1280x720-1.mp4",
-"A07":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/09/d2-1280x720-2.mp4"}
+"C01":"https://oceanexplorer.noaa.gov/wp-content/uploads/2025/09/dive05-coral-polyp.mp4",
+"C02":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/05/sedci-1920x1080-1.mp4",
+"C03":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1711/dailyupdates/media/video/architects/architects-1280x720.mp4",
+"C04":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1907/dailyupdates/coral-garden/coral-garden-1280x720.mp4",
+"C05":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex2107/gallery/media/million-mounds-1280x720.mp4",
+"C06":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/08/reef-conversation-1920x1080-1.mp4",
+"C07":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1708/dailyupdates/media/video/concert/concert-1280x720.mp4"
+}
 def run(args):
     print("+"," ".join(map(str,args)),flush=True)
     subprocess.run(list(map(str,args)),check=True)
