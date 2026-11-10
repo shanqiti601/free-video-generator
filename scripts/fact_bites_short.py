@@ -38,9 +38,9 @@ OUT = Path("output")
 NOAA_URL = "https://oceanexplorer.noaa.gov/wp-content/uploads/2018/06/greenland-mp4.mp4"
 VOICE_CANDIDATES = ["en-GB-RyanNeural", "en-US-ChristopherNeural", "en-GB-ThomasNeural"]
 
-HOOK = "Imagine being born before the first photograph... and still being alive today."
+HOOK = "Some Greenland sharks alive today may have been born before the first photograph was ever taken."
 FACT = "Deep beneath the Arctic waves, the Greenland shark moves through darkness. Scientists estimate that some may live for nearly four centuries."
-SCIENCE = "In a study published in the journal Science, researchers used radiocarbon dating in the eye lenses of 28 female sharks. The largest was estimated to be about 392 years old — with a wide margin of uncertainty."
+SCIENCE = "In a study published in the journal Science, researchers used radiocarbon dating in the eye lenses of 28 Greenland sharks. The largest was estimated to be about 392 years old — with a wide margin of uncertainty."
 TWIST = "And here is the astonishing part: females may not reach sexual maturity until around 156 years of age. A shark could spend more than a century simply growing up."
 END = "A living witness to centuries of history... hidden in the coldest depths of the ocean. Follow Fact Bites for discoveries most people never hear about."
 
@@ -201,16 +201,13 @@ def main():
         clip = OUT / f"shot_{i+1}.mp4"
         # Use a slightly different crop center for each shot, with a slow push-in.
         xexpr = ["iw/2-(iw/zoom/2)", "iw*0.46-(iw/zoom/2)", "iw*0.54-(iw/zoom/2)", "iw/2-(iw/zoom/2)"][i]
-        # Preserve the complete 16:9 source frame in the 9:16 canvas.
-        # A softly blurred, brighter fill replaces black bars; the sharp foreground is never cropped.
+        # Fill the complete 9:16 canvas with real footage (no letterbox bands).
+        # The NOAA shark is near the center of frame; a centered vertical crop keeps the subject prominent.
         vf = (
-            "[0:v]split[bg][fg];"
-            "[bg]scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
-            "crop=1080:1920,boxblur=30:12,eq=brightness=0.10:saturation=1.18[bg];"
-            "[fg]scale=1080:1920:force_original_aspect_ratio=decrease:flags=lanczos[fg];"
-            "[bg][fg]overlay=(W-w)/2:(H-h)/2,"
-            "hqdn3d=1.2:1.2:4:4,eq=contrast=1.05:saturation=1.16:brightness=0.08:gamma=1.08,"
-            "unsharp=7:7:0.55:5:5:0.0,setsar=1,format=yuv420p[out]"
+            "scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
+            "crop=1080:1920,"
+            "hqdn3d=1.2:1.2:4:4,eq=contrast=1.06:saturation=1.18:brightness=0.12:gamma=1.12,"
+            "unsharp=7:7:0.55:5:5:0.0,setsar=1,format=yuv420p"
         )
         # Skip NOAA's original black title slate so the story opens on actual underwater footage.
         usable = max(1.0, source_len - segment * 0.85 - 12.0)
