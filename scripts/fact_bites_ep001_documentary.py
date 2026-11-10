@@ -25,23 +25,35 @@ def download():
 def probe_duration(path):
     x=subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","json",str(path)])
     return float(json.loads(x)["format"]["duration"])
-SCRIPT = """Beneath the ocean surface lies a world that sunlight can barely reach. It is a place of immense pressure, cold water, and animals adapted to conditions that would be impossible for us to survive.
+SCRIPT = """Beneath the ocean surface lies a world that sunlight can barely reach. Here, pressure rises, temperatures can fall close to freezing, and darkness becomes the defining feature of the landscape. Yet this is no empty wilderness. The deep ocean contains habitats, hunters, scavengers, and communities shaped by conditions unlike those on land.
 
-As we descend, the blue light fades. In the deep ocean, the familiar colours of the surface disappear, and the seafloor becomes a landscape revealed only when an exploration vehicle sends out its lights.
+As we descend, sunlight fades from blue to black. Colours disappear, and the seafloor becomes visible only when an exploration vehicle sends out its lights. Every beam reveals a small circle of an enormous environment. Beyond it lies a world still waiting to be observed.
 
-This is not an empty wilderness. A giant grenadier moves through the darkness, searching for food. Its large eyes are suited to a world where every trace of light matters. Nearby, an octopus changes its appearance against the seafloor. In the deep, camouflage is not decoration. It is survival.
+A giant grenadier moves slowly above the seabed. Its body is adapted to life where food may be widely scattered and every meal matters. Large eyes help it detect faint traces of light, while its movements are measured and economical. In the deep sea, survival often depends not on speed, but on patience and the ability to make use of rare opportunities.
 
-Some of the most remarkable structures are not animals at all. A deep-sea sponge can grow into an enormous habitat, rising from the seabed and providing shelter for other organisms. These communities develop slowly, in a world where food can be scarce and disturbance may last for generations.
+Nearby, an octopus changes its appearance against the seafloor. Its skin can shift in colour and texture, helping it blend into a complex background. Camouflage can make the difference between being noticed and remaining hidden. For an animal living among rocks, sediment, and shadow, changing appearance is a remarkable form of protection.
 
-Far above, the ocean's surface continues to send material downward. Tiny fragments of organic matter drift through the water like snow. Scientists call it marine snow. It is one of the ways energy reaches animals living far below the sunlit layer.
+Some of the most striking structures on the deep seabed are built by animals that seem almost motionless. Sponges filter tiny particles from the water, drawing food through channels in their bodies. Some deep-sea sponges grow to extraordinary sizes and may provide shelter for other organisms. A large sponge is more than an individual animal. It can become part of the architecture of a habitat, adding structure to an otherwise open seafloor.
 
-Yet not all deep-sea ecosystems depend on food falling from above. At hydrothermal vents, seawater circulates through hot rocks beneath the seafloor and returns carrying dissolved chemicals. Microorganisms use chemical energy to build organic matter. This process, called chemosynthesis, supports communities in places where sunlight never arrives.
+These habitats can be slow to develop. In the deep ocean, many organisms grow slowly, and disturbances may take a long time to recover from. A footprint, a piece of lost equipment, or a change in the environment can affect a place that has remained undisturbed for generations. Exploring these areas carefully helps scientists understand what lives here before it is altered.
 
-An exploration vehicle can reveal only a small part of this immense environment. Its cameras move slowly across the seabed, uncovering animals, geological formations, and habitats that may never have been seen before.
+Far above, the ocean's surface continues to send material downward. Tiny fragments of dead plankton, mucus, waste, and other organic matter drift through the water column. Scientists call this marine snow. It falls slowly through the darkness, carrying energy from surface ecosystems to animals living far below the sunlit layer. What looks like a gentle snowfall is, in fact, an important food supply for much of the deep ocean.
 
-Every dive adds another observation. Every image helps scientists ask better questions about how life survives, how these ecosystems connect, and what may put them at risk.
+The supply is uneven. Some places receive more falling material than others, and storms or seasonal blooms at the surface can influence what reaches the depths. Many deep-sea animals have adapted to long periods when food is scarce. Some wait, some move over large distances, and others feed on whatever reaches the seabed. This connection between the surface and the deep reminds us that the ocean is one connected system.
 
-The deep ocean is not a lifeless void. It is a living world, hidden beneath the waves — and we are only beginning to understand it.
+But not every deep-sea community depends on food falling from above. At hydrothermal vents, seawater seeps into cracks in the ocean crust, is heated by hot rock, and returns carrying dissolved chemicals. When this fluid meets cold seawater, minerals can form dramatic chimney-like structures. The surrounding water may shimmer with heat, while the seafloor hosts communities adapted to this unusual environment.
+
+Here, the foundation of the food web is different. Microorganisms use chemical energy to build organic matter, a process known as chemosynthesis. Instead of relying directly on sunlight, these microbes use energy from chemical reactions. Other organisms can depend on them, creating communities in places where sunlight never arrives. Hydrothermal vents reveal that life can thrive using energy sources beyond the familiar power of the sun.
+
+An exploration vehicle such as NOAA's Deep Discoverer allows scientists to study these remote places without sending people into the crushing pressure. Cameras, lights, and sampling tools are controlled from a ship at the surface. Operators guide the vehicle slowly across the seabed, watching for animals, geological formations, and signs of habitats that may never have been documented before.
+
+The vehicle's view is still only a small window. A camera can show what lies directly in front of it, but much of the deep ocean remains difficult to reach and observe. Each dive is planned carefully, and each discovery raises new questions. What lives beyond the edge of the lights? How are these habitats connected? Which species remain unknown?
+
+The deep ocean is also important to the wider planet. It stores heat and carbon, supports complex food webs, and contains ecosystems that scientists are only beginning to understand. Learning how these systems work helps us understand the ocean as a whole, including the ways human activity may affect even its most remote regions.
+
+Every image adds another piece to the picture. Every sample and observation helps researchers build a better understanding of life under extreme conditions. The more we explore, the clearer it becomes that the deep is not a lifeless void. It is a living world of extraordinary adaptations, fragile habitats, and connections that reach all the way to the surface.
+
+Beneath the waves, most of this world remains unseen. But with every careful dive, its hidden story comes into view.
 
 This is FACT BITES."""
 async def narration():
