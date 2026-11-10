@@ -31,11 +31,14 @@ jobs:
           python-version: "3.12"
       - name: Ensure free video tools are available
         run: |
-          if command -v ffmpeg >/dev/null 2>&1 && command -v fc-match >/dev/null 2>&1; then
-            echo "Using runner-provided FFmpeg and fontconfig."
-          else
+          missing=()
+          command -v ffmpeg >/dev/null 2>&1 || missing+=(ffmpeg)
+          [ -d /usr/share/fonts/truetype/dejavu ] || missing+=(fonts-dejavu-core)
+          if [ ${#missing[@]} -gt 0 ]; then
             sudo apt-get update
-            sudo apt-get install -y ffmpeg fonts-dejavu-core
+            sudo apt-get install -y "${missing[@]}"
+          else
+            echo "Using runner-provided FFmpeg and DejaVu fonts."
           fi
       - name: Install Python packages
         run: |
