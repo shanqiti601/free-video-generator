@@ -39,7 +39,7 @@ NOAA_URL = "https://oceanexplorer.noaa.gov/wp-content/uploads/2018/06/greenland-
 VOICE_CANDIDATES = ["en-GB-RyanNeural", "en-US-ChristopherNeural", "en-GB-ThomasNeural"]
 
 HOOK = "This shark may live for centuries — and scientists found its age in its eyes."
-FACT = "The Greenland shark drifts through the deep, icy waters of the North Atlantic and Arctic, growing at a remarkably slow pace."
+FACT = "Radiocarbon dating of eye-lens nuclei from 28 female Greenland sharks suggested a lifespan of at least 272 years."
 SCIENCE = "In a study published in Science, researchers examined the eye lenses of 28 Greenland sharks. The largest specimen was estimated to be about 392 years old, with an uncertainty of roughly 120 years — a wide range, not an exact birthday."
 TWIST = "The study also estimated that females reach sexual maturity at about 156 years old, with an uncertainty of roughly 22 years. For this shark, growing up can take more than a century."
 END = "For the Greenland shark, a century is barely a beginning."
@@ -70,7 +70,7 @@ def write_ass(seconds, path):
         "Style: Fact,DejaVu Sans,46,&H0000F2FF,&H0000F2FF,&H00101A29,&HCC071321,1,0,0,0,100,100,1,0,1,3,1,8,92,92,430,1",
         "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
         f"Dialogue: 1,0:00:00.00,{ass_time(min(seconds, 3.0))},Brand,,0,0,0,,FACT BITES",
-        f"Dialogue: 2,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  SLOW-GROWING GIANT",
+        f"Dialogue: 2,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  LIFESPAN: AT LEAST 272 YEARS",
         f"Dialogue: 2,{ass_time(seconds * 0.39)},{ass_time(seconds * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
         f"Dialogue: 2,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS",
     ]
@@ -225,6 +225,20 @@ def main():
     silent = OUT / "documentary_silent.mp4"
     run(["ffmpeg","-y","-loglevel","error","-f","concat","-safe","0","-i",str(concat),
          "-c","copy","-t",f"{target:.2f}",str(silent)])
+
+    # Keep primary research and footage credits with the export for transparent publishing.
+    sources = OUT / "Research-Sources.txt"
+    sources.write_text(
+        "SCIENTIFIC SOURCE\\n"
+        "Nielsen, J. et al. (2016). Eye lens radiocarbon reveals centuries of longevity in the Greenland shark (Somniosus microcephalus).\\n"
+        "Science, 353(6300), 702–704. DOI: 10.1126/science.aaf1703\\n"
+        "https://doi.org/10.1126/science.aaf1703\\n\\n"
+        "FOOTAGE SOURCE AND CREDIT\\n"
+        "NOAA Ocean Exploration, Greenland Shark — Northeast U.S. Canyons Expedition 2013.\\n"
+        "https://oceanexplorer.noaa.gov/multimedia/video-playlist-ex1304-greenlandshark/\\n"
+        "Credit: NOAA Ocean Exploration, Northeast U.S. Canyons Expedition 2013.\\n",
+        encoding="utf-8",
+    )
 
     # On-screen copy is intentionally limited to FACT BITES branding and fact cards.
     captions = OUT / "captions.ass"
