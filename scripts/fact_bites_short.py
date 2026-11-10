@@ -15,9 +15,10 @@ import edge_tts
 # script is executed directly by GitHub Actions.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 try:
-    from core.model_team import consult_team, ModelTeamError
+    from core.model_team import consult_team, synthesize_replies, ModelTeamError
 except Exception:
     consult_team = None
+    synthesize_replies = None
     ModelTeamError = RuntimeError
 
 W, H, FPS = 1080, 1920, 30
@@ -120,14 +121,19 @@ def optional_ai_review(narration):
         reviews = consult_team(system, narration)
         report = OUT / "AI-Peer-Review.txt"
         report.write_text(
-            "\n\n".join(
-                f"--- {item['provider']} ({item['model']}) ---\n{item['text']}"
+            "\\n\\n".join(
+                f"--- {item['provider']} ({item['model']}) ---\\n{item['text']}"
                 for item in reviews
-            ) + "\n",
+            ) + "\\n",
             encoding="utf-8",
         )
         print(f"AI_REVIEW=completed ({len(reviews)} free model responses)")
         print(f"AI_REVIEW_REPORT={report}")
+        if synthesize_replies is not None and len(reviews) > 1:
+            synthesis = synthesize_replies(system, reviews)
+            synthesis_path = OUT / "AI-Team-Synthesis.txt"
+            synthesis_path.write_text(synthesis + "\\n", encoding="utf-8")
+            print(f"AI_TEAM_SYNTHESIS={synthesis_path}")
     except Exception as exc:
         # The video remains buildable when no free provider key is configured
         # or a provider is rate-limited; no paid fallback is attempted.
