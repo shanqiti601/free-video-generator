@@ -161,9 +161,9 @@ def synthesize_replies(system: str, replies: list[dict]):
     synthesis_prompt = (
         "Compare the independent model drafts below. Resolve disagreements using "
         "only evidence present in the drafts; do not invent facts or sources. "
-        "Clearly label unresolved uncertainty. Produce one concise synthesis.\\n\\n"
-        + "\\n\\n".join(
-            f"### {item['provider']} ({item['model']})\\n{item['text']}"
+        "Clearly label unresolved uncertainty. Produce one concise synthesis.\n\n"
+        + "\n\n".join(
+            f"### {item['provider']} ({item['model']})\n{item['text']}"
             for item in replies
         )
     )
