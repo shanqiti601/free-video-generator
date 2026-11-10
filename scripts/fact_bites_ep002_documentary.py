@@ -157,7 +157,7 @@ def main():
       ("C03",45,34,"A SLOW-GROWING WORLD"),
       ("C06",12,34,"DISCOVERING HIDDEN REEFS"),
       ("C02",70,34,"FRAGILE LIVING STRUCTURES"),
-      ("C01",48,26,"FACT BITES")
+      ("C02",160,26,"FACT BITES")
     ]
     concat=[]
     for i,(key,start,dur,label) in enumerate(plan):
