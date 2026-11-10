@@ -10,20 +10,44 @@ SOURCES={
 "C02":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/05/sedci-1920x1080-1.mp4",
 "C03":"https://archive.oceanexplorer.noaa.gov/okeanos/explorations/ex1711/dailyupdates/media/video/architects/architects-1280x720.mp4",
 "C04":"https://oceanexplorer.noaa.gov/wp-content/uploads/2019/11/coral-garden-1280x720-1.mp4",
-"C05":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex2107/gallery/media/million-mounds-1280x720.mp4",
-"C06":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/08/reef-conversation-1920x1080-1.mp4",
-"C07":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1708/dailyupdates/media/video/concert/concert-1280x720.mp4"
+"C05":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1711/dailyupdates/media/video/architects/architects-1280x720.mp4",
+"C06":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/05/sedci-1920x1080-1.mp4",
+"C07":"https://oceanexplorer.noaa.gov/wp-content/uploads/2019/11/coral-garden-1280x720-1.mp4"
 }
 def run(args):
     print("+"," ".join(map(str,args)),flush=True)
     subprocess.run(list(map(str,args)),check=True)
 def download():
-    import urllib.request
+    import urllib.request, time
     for k,url in SOURCES.items():
         p=ASSETS/(k+".mp4")
-        if not p.exists() or p.stat().st_size<100000:
-            print("Downloading",k,flush=True)
-            urllib.request.urlretrieve(url,p)
+        if p.exists() and p.stat().st_size>=100000:
+            print(f"Using cached {k}: {p.stat().st_size} bytes",flush=True)
+            continue
+        print(f"Downloading {k} from {url}",flush=True)
+        last_error=None
+        for attempt in range(1,4):
+            try:
+                req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 FACT-BITES documentary research"})
+                with urllib.request.urlopen(req,timeout=90) as response, p.open("wb") as out:
+                    if response.status != 200:
+                        raise RuntimeError(f"HTTP {response.status} for {k}")
+                    while True:
+                        chunk=response.read(1024*1024)
+                        if not chunk: break
+                        out.write(chunk)
+                if p.stat().st_size<100000:
+                    raise RuntimeError(f"{k} download too small: {p.stat().st_size} bytes")
+                print(f"Downloaded {k}: {p.stat().st_size} bytes",flush=True)
+                last_error=None
+                break
+            except Exception as exc:
+                last_error=exc
+                if p.exists(): p.unlink()
+                print(f"Attempt {attempt}/3 failed for {k}: {exc}",flush=True)
+                if attempt<3: time.sleep(attempt*3)
+        if last_error:
+            raise RuntimeError(f"NOAA source {k} failed after 3 attempts: {url}") from last_error
 def probe_duration(path):
     x=subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","json",str(path)])
     return float(json.loads(x)["format"]["duration"])
