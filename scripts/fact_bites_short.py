@@ -68,8 +68,14 @@ def write_ass(text, seconds, path):
         "[Script Info]", "ScriptType: v4.00+", "PlayResX: 1080", "PlayResY: 1920", "WrapStyle: 0",
         "[V4+ Styles]",
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        "Style: Default,DejaVu Sans,46,&H00FFFFFF,&H0000C8FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,3,2,2,150,150,300,1",
-        "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
+        "Style: Default,DejaVu Sans,46,&H00FFFFFF,&H0000C8FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,3,2,2,110,110,260,1",
+        "Style: Brand,DejaVu Sans,58,&H0000D7FF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,3,1,8,90,90,100,1",
+        "Style: Intro,DejaVu Sans,62,&H00FFFFFF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,4,2,8,100,100,245,1",
+        "Style: EndCard,DejaVu Sans,76,&H00FFFFFF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,4,2,5,90,90,0,1",
+        "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
+        f"Dialogue: 1,0:00:00.00,{ass_time(seconds + 3.0)},Brand,,0,0,0,,FACT BITES",
+        f"Dialogue: 2,0:00:00.00,0:00:04.00,Intro,,0,0,0,,THE SHARK THAT CAN LIVE FOR CENTURIES",
+        f"Dialogue: 3,{ass_time(seconds + 0.2)},{ass_time(seconds + 3.2)},EndCard,,0,0,0,,FACT BITES\\NREAL STORIES. EXTRAORDINARY FACTS."
     ]
     total = max(1, len(words)); cursor = 0
     for chunk in chunks:
@@ -179,7 +185,8 @@ def main():
     audio = OUT / "narration.mp3"
     asyncio.run(make_voice(narration, audio))
     voice_len = float(probe(audio))
-    target = max(48.0, voice_len + 1.2)
+    # Reserve a clean 3.5-second branded end card after narration.
+    target = max(48.0, voice_len + 3.5)
 
     footage = OUT / "noaa_greenland_shark.mp4"
     download_footage(footage)
@@ -194,17 +201,22 @@ def main():
         clip = OUT / f"shot_{i+1}.mp4"
         # Use a slightly different crop center for each shot, with a slow push-in.
         xexpr = ["iw/2-(iw/zoom/2)", "iw*0.46-(iw/zoom/2)", "iw*0.54-(iw/zoom/2)", "iw/2-(iw/zoom/2)"][i]
+        # Preserve the complete 16:9 source frame in the 9:16 canvas.
+        # A softly blurred, brighter fill replaces black bars; the sharp foreground is never cropped.
         vf = (
-            "scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
-            "crop=1080:1920,"
-            f"zoompan=z='min(zoom+0.00045,1.035)':x='{xexpr}':y='ih/2-(ih/zoom/2)':"
-            f"d=1:s={W}x{H}:fps={FPS},"
-            "hqdn3d=1.2:1.2:4:4,eq=contrast=1.08:saturation=1.10:brightness=-0.02,"
-            "unsharp=7:7:0.65:5:5:0.0,setsar=1"
+            "[0:v]split[bg][fg];"
+            "[bg]scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
+            "crop=1080:1920,boxblur=30:12,eq=brightness=0.10:saturation=1.18[bg];"
+            "[fg]scale=1080:1920:force_original_aspect_ratio=decrease:flags=lanczos[fg];"
+            "[bg][fg]overlay=(W-w)/2:(H-h)/2,"
+            "hqdn3d=1.2:1.2:4:4,eq=contrast=1.05:saturation=1.16:brightness=0.08:gamma=1.08,"
+            "unsharp=7:7:0.55:5:5:0.0,setsar=1,format=yuv420p[out]"
         )
-        start = (i * max(0.5, source_len - segment * 0.85)) / 3
+        # Skip NOAA's original black title slate so the story opens on actual underwater footage.
+        usable = max(1.0, source_len - segment * 0.85 - 12.0)
+        start = 12.0 + (i * usable) / 3
         run(["ffmpeg","-y","-loglevel","error","-ss",f"{start:.2f}","-stream_loop","-1","-i",str(footage),
-             "-t",f"{segment:.2f}","-vf",vf,"-an","-c:v","libx264","-preset","medium",
+             "-t",f"{segment:.2f}","-filter_complex",vf,"-map","[out]","-an","-c:v","libx264","-preset","medium",
              "-crf","18","-pix_fmt","yuv420p",str(clip)])
         clips.append(clip)
 
@@ -226,7 +238,7 @@ def main():
         f"{max(0,target-4):.2f}:d=4[amb];"
         "[1:a]highpass=f=75,lowpass=f=9000,acompressor=threshold=0.12:ratio=3:attack=20:release=250,"
         "volume=1.25[voice];[voice][amb]amix=inputs=2:duration=longest:weights=1 0.28[a]",
-        "-vf",f"subtitles={captions},vignette=PI/5,format=yuv420p",
+        "-vf",f"subtitles={captions},format=yuv420p",
         "-map","0:v:0","-map","[a]","-t",f"{target:.2f}",
         "-c:v","libx264","-preset","medium","-crf","17","-c:a","aac","-b:a","192k",
         "-movflags","+faststart",str(final)
