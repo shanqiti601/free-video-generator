@@ -10,7 +10,7 @@ SOURCES={
 "C02":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/05/sedci-1920x1080-1.mp4",
 "C03":"https://archive.oceanexplorer.noaa.gov/okeanos/explorations/ex1711/dailyupdates/media/video/architects/architects-1280x720.mp4",
 "C04":"https://oceanexplorer.noaa.gov/wp-content/uploads/2019/11/coral-garden-1280x720-1.mp4",
-"C05":"https://oceanexplorer.noaa.gov/okeanos/explorations/ex1711/dailyupdates/media/video/architects/architects-1280x720.mp4",
+"C05":"https://archive.oceanexplorer.noaa.gov/okeanos/explorations/ex1711/dailyupdates/media/video/architects/architects-1280x720.mp4",
 "C06":"https://oceanexplorer.noaa.gov/wp-content/uploads/2018/05/sedci-1920x1080-1.mp4",
 "C07":"https://oceanexplorer.noaa.gov/wp-content/uploads/2019/11/coral-garden-1280x720-1.mp4"
 }
