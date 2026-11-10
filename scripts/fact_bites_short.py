@@ -38,13 +38,13 @@ def ass_time(seconds):
 
 def write_ass(text, seconds, path):
     words = text.split()
-    # Short readable phrases, timed across narration; bold white with subtle shadow.
-    chunks = [" ".join(words[i:i+5]) for i in range(0, len(words), 5)]
+    # Short captions in a centered mobile-safe area; explicit wrapping avoids edge overflow.
+    chunks = [" ".join(words[i:i+4]) for i in range(0, len(words), 4)]
     rows = [
-        "[Script Info]", "ScriptType: v4.00+", "PlayResX: 1080", "PlayResY: 1920", "WrapStyle: 2",
+        "[Script Info]", "ScriptType: v4.00+", "PlayResX: 1080", "PlayResY: 1920", "WrapStyle: 0",
         "[V4+ Styles]",
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        "Style: Default,DejaVu Sans,48,&H00FFFFFF,&H0000C8FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,3,2,2,90,90,210,1",
+        "Style: Default,DejaVu Sans,46,&H00FFFFFF,&H0000C8FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,3,2,2,150,150,300,1",
         "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
     ]
     total = max(1, len(words)); cursor = 0
@@ -53,7 +53,16 @@ def write_ass(text, seconds, path):
         start = seconds * cursor / total
         cursor += n
         end = seconds * cursor / total
-        rows.append(f"Dialogue: 0,{ass_time(start)},{ass_time(end)},Default,,0,0,0,,{chunk}")
+        parts = chunk.split()
+        line1, line2 = [], []
+        for word in parts:
+            candidate = " ".join(line1 + [word])
+            if len(candidate) <= 22 and not line2:
+                line1.append(word)
+            else:
+                line2.append(word)
+        caption = " ".join(line1 + ([r"\N"] if line2 else []) + line2)
+        rows.append(f"Dialogue: 0,{ass_time(start)},{ass_time(end)},Default,,0,0,0,,{caption}")
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
 async def make_voice(text, path):
@@ -110,12 +119,12 @@ def main():
         # Use a slightly different crop center for each shot, with a slow push-in.
         xexpr = ["iw/2-(iw/zoom/2)", "iw*0.46-(iw/zoom/2)", "iw*0.54-(iw/zoom/2)", "iw/2-(iw/zoom/2)"][i]
         vf = (
-            "scale=2160:3840:force_original_aspect_ratio=increase,"
-            "crop=2160:3840,"
+            "scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
+            "crop=1080:1920,"
             f"zoompan=z='min(zoom+0.00045,1.035)':x='{xexpr}':y='ih/2-(ih/zoom/2)':"
             f"d=1:s={W}x{H}:fps={FPS},"
-            "eq=contrast=1.12:saturation=1.15:brightness=-0.035,"
-            "unsharp=5:5:0.45:3:3:0.0,setsar=1"
+            "hqdn3d=1.2:1.2:4:4,eq=contrast=1.08:saturation=1.10:brightness=-0.02,"
+            "unsharp=7:7:0.65:5:5:0.0,setsar=1"
         )
         start = (i * max(0.5, source_len - segment * 0.85)) / 3
         run(["ffmpeg","-y","-loglevel","error","-ss",f"{start:.2f}","-stream_loop","-1","-i",str(footage),
@@ -143,7 +152,7 @@ def main():
         "volume=1.25[voice];[voice][amb]amix=inputs=2:duration=longest:weights=1 0.28[a]",
         "-vf",f"subtitles={captions},vignette=PI/5,format=yuv420p",
         "-map","0:v:0","-map","[a]","-t",f"{target:.2f}",
-        "-c:v","libx264","-preset","medium","-crf","18","-c:a","aac","-b:a","192k",
+        "-c:v","libx264","-preset","medium","-crf","17","-c:a","aac","-b:a","192k",
         "-movflags","+faststart",str(final)
     ])
     actual = float(probe(final))
