@@ -52,10 +52,38 @@ Beneath the waves, most of this world remains unseen. But with every careful div
 And the discoveries do not end when a vehicle returns to the surface. Scientists compare observations, map habitats, and revisit locations to understand how these ecosystems change over time. Some questions take years to answer. Others begin with a single image of an unfamiliar animal passing through the lights. Each expedition reminds us how much remains beyond our view, and why careful exploration matters. The deep ocean is connected to the rest of the planet, and protecting it begins with understanding it.
 
 This is FACT BITES."""
+def srt_timestamp(seconds):
+    ms=round(seconds*1000)
+    h,ms=divmod(ms,3600000); m,ms=divmod(ms,60000); s,ms=divmod(ms,1000)
+    return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
+
 async def narration():
     p=ROOT/"narration.mp3"
-    await Communicate(SCRIPT,voice="en-US-GuyNeural",rate="-8%",volume="+0%").save(str(p))
-    return p
+    srt=ROOT/"captions.srt"
+    communicate=Communicate(SCRIPT,voice="en-US-GuyNeural",rate="-8%",volume="+0%")
+    words=[]
+    with p.open("wb") as audio:
+        async for chunk in communicate.stream():
+            if chunk["type"]=="audio":
+                audio.write(chunk["data"])
+            elif chunk["type"]=="WordBoundary":
+                start=chunk["offset"]/10_000_000
+                end=(chunk["offset"]+chunk["duration"])/10_000_000
+                words.append((start,end,chunk["text"]))
+    captions=[]; group=[]
+    for word in words:
+        candidate=" ".join(x[2] for x in group+[word])
+        if group and (len(group)>=8 or len(candidate)> 42):
+            captions.append(group); group=[]
+        group.append(word)
+    if group: captions.append(group)
+    blocks=[]
+    for i,g in enumerate(captions,1):
+        start=max(0,g[0][0]-0.03); end=max(start+0.5,g[-1][1]+0.12)
+        line=" ".join(x[2] for x in g)
+        blocks.append(f"{i}\\n{srt_timestamp(start)} --> {srt_timestamp(end)}\\n{line}\\n")
+    srt.write_text("\\n".join(blocks),encoding="utf-8")
+    return p,srt
 def make_segment(src,start,dur,out,label):
     # Fit the source to a cinematic 1080p frame without stretching; restrained label.
     vf=("scale=1920:1080:force_original_aspect_ratio=increase,"
@@ -89,18 +117,20 @@ def main():
     listing.write_text("".join("file '"+str(p.resolve())+"'\n" for p in concat))
     silent=ROOT/"picture.mp4"
     run(["ffmpeg","-y","-f","concat","-safe","0","-i",listing,"-c","copy",silent])
-    voice=asyncio.run(narration())
-    # Generate an original, subtle synthetic low-frequency ambience; no third-party music.
+    voice,captions=asyncio.run(narration())
+    # Burn accurately timed English captions into the picture for universal playback.
     final=pathlib.Path("output/Fact-Bites-EP001-The-Hidden-World-of-the-Deep-Ocean.mp4")
     final.parent.mkdir(exist_ok=True)
     dur=probe_duration(silent)
+    subtitle_filter="subtitles="+str(captions.resolve())+":force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=58'"
     run(["ffmpeg","-y","-i",silent,"-i",voice,"-f","lavfi","-i",
          "anoisesrc=color=pink:amplitude=0.018:sample_rate=48000",
          "-filter_complex",
          "[1:a]aresample=48000,volume=1.0[voice];[2:a]lowpass=f=180,volume=0.10[amb];"
          "[voice][amb]amix=inputs=2:duration=longest:dropout_transition=2, loudnorm=I=-16:TP=-1.5:LRA=11[a]",
-         "-map","0:v:0","-map","[a]","-t",str(dur),"-c:v","copy","-c:a","aac","-b:a","192k",
-         "-movflags","+faststart",final])
+         "-vf",subtitle_filter,"-map","0:v:0","-map","[a]","-t",str(dur),
+         "-c:v","libx264","-preset","veryfast","-crf","19","-pix_fmt","yuv420p",
+         "-c:a","aac","-b:a","192k","-movflags","+faststart",final])
     report=subprocess.check_output(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(final)],text=True)
     (ROOT/"FINAL-QA-FFPROBE.json").write_text(report)
     print("FINAL_VIDEO="+str(final),flush=True)
