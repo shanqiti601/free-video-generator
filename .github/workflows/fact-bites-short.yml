@@ -14,6 +14,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: fact-bites-short-build
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
