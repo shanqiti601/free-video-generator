@@ -139,8 +139,8 @@ def optional_ai_review(narration):
         # or a provider is rate-limited; no paid fallback is attempted.
         report = OUT / "AI-Peer-Review.txt"
         report.write_text(
-            f"AI peer review was skipped safely: {exc}\\n"
-            "No paid fallback was attempted.\\n",
+            f"AI peer review was skipped safely: {exc}\n"
+            "No paid fallback was attempted.\n",
             encoding="utf-8",
         )
         print(f"AI_REVIEW=skipped ({exc})")
