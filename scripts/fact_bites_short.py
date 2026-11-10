@@ -72,7 +72,7 @@ def write_ass(seconds, path):
         f"Dialogue: 1,0:00:00.00,{ass_time(min(seconds, 3.0))},Brand,,0,0,0,,FACT BITES",
         f"Dialogue: 2,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  AT LEAST 272 YEARS",
         f"Dialogue: 2,{ass_time(seconds * 0.39)},{ass_time(seconds * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
-        f"Dialogue: 2,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS",
+        f"Dialogue: 2,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: AT LEAST 156 ± 22 YEARS",
     ]
     path.write_text("\n".join(rows) + "\n", encoding="utf-8")
 
@@ -194,7 +194,7 @@ def main():
         clip = OUT / filename
         vf = (
             "scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
-            "crop=1080:1920,hqdn3d=1.0:1.0:3:3,"
+            "crop=1080:1920:iw-ow:0,hqdn3d=1.0:1.0:3:3,"
             "eq=contrast=1.05:saturation=1.10:brightness=0.14:gamma=1.16:gamma_weight=0.85,"
             "unsharp=5:5:0.45:5:5:0.0,"
             "zoompan=z='min(zoom+0.0007,1.055)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,"
