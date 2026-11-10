@@ -229,14 +229,14 @@ def main():
     # Keep primary research and footage credits with the export for transparent publishing.
     sources = OUT / "Research-Sources.txt"
     sources.write_text(
-        "SCIENTIFIC SOURCE\\n"
-        "Nielsen, J. et al. (2016). Eye lens radiocarbon reveals centuries of longevity in the Greenland shark (Somniosus microcephalus).\\n"
-        "Science, 353(6300), 702–704. DOI: 10.1126/science.aaf1703\\n"
-        "https://doi.org/10.1126/science.aaf1703\\n\\n"
-        "FOOTAGE SOURCE AND CREDIT\\n"
-        "NOAA Ocean Exploration, Greenland Shark — Northeast U.S. Canyons Expedition 2013.\\n"
-        "https://oceanexplorer.noaa.gov/multimedia/video-playlist-ex1304-greenlandshark/\\n"
-        "Credit: NOAA Ocean Exploration, Northeast U.S. Canyons Expedition 2013.\\n",
+        "SCIENTIFIC SOURCE\n"
+        "Nielsen, J. et al. (2016). Eye lens radiocarbon reveals centuries of longevity in the Greenland shark (Somniosus microcephalus).\n"
+        "Science, 353(6300), 702–704. DOI: 10.1126/science.aaf1703\n"
+        "https://doi.org/10.1126/science.aaf1703\n\n"
+        "FOOTAGE SOURCE AND CREDIT\n"
+        "NOAA Ocean Exploration, Greenland Shark — Northeast U.S. Canyons Expedition 2013.\n"
+        "https://oceanexplorer.noaa.gov/multimedia/video-playlist-ex1304-greenlandshark/\n"
+        "Credit: NOAA Ocean Exploration, Northeast U.S. Canyons Expedition 2013.\n",
         encoding="utf-8",
     )
 

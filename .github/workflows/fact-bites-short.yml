@@ -86,6 +86,7 @@ jobs:
           path: |
             output/Fact-Bites-Short.mp4
             output/AI-Peer-Review.txt
-            output/Video-QA.txt\n            output/Research-Sources.txt
+            output/Video-QA.txt
+            output/Research-Sources.txt
           if-no-files-found: error
           retention-days: 7
