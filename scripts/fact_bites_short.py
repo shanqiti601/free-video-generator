@@ -122,7 +122,7 @@ def optional_ai_review(narration):
     if consult_team is None:
         report = OUT / "AI-Peer-Review.txt"
         report.write_text(
-            f"AI review module could not be loaded: {AI_REVIEW_IMPORT_ERROR}\\n",
+            f"AI review module could not be loaded: {AI_REVIEW_IMPORT_ERROR}\n",
             encoding="utf-8",
         )
         print(f"AI_REVIEW=unavailable ({AI_REVIEW_IMPORT_ERROR})")
