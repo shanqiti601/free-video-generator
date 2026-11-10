@@ -3,11 +3,22 @@
 import argparse
 import asyncio
 import math
+import os
+import sys
 import subprocess
 import urllib.request
 from pathlib import Path
 
 import edge_tts
+
+# Make the repository's free-only multi-model reviewer importable when this
+# script is executed directly by GitHub Actions.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+try:
+    from core.model_team import consult_team, ModelTeamError
+except Exception:
+    consult_team = None
+    ModelTeamError = RuntimeError
 
 W, H, FPS = 1080, 1920, 30
 OUT = Path("output")
@@ -90,6 +101,39 @@ def download_footage(path):
         raise RuntimeError("NOAA footage download was unexpectedly small.")
     print(f"NOAA_FOOTAGE_BYTES={path.stat().st_size}")
 
+def optional_ai_review(narration):
+    """Ask configured free models for an independent pre-production review."""
+    if os.getenv("FACT_BITES_AI_REVIEW", "1").strip().lower() not in {"1", "true", "yes"}:
+        print("AI_REVIEW=disabled")
+        return
+    if consult_team is None:
+        print("AI_REVIEW=unavailable (model team module could not be imported)")
+        return
+    system = (
+        "You are a strict documentary fact-check and short-form video editor. "
+        "Review the supplied narration only. Do not invent sources or facts. "
+        "Flag unsupported or uncertain claims, misleading certainty, pacing "
+        "problems, and subtitle overflow risk. Return concise bullet points. "
+        "Do not rewrite or silently approve factual claims."
+    )
+    try:
+        reviews = consult_team(system, narration)
+        report = OUT / "AI-Peer-Review.txt"
+        report.write_text(
+            "\\n\\n".join(
+                f"--- {item['provider']} ({item['model']}) ---\\n{item['text']}"
+                for item in reviews
+            ) + "\\n",
+            encoding="utf-8",
+        )
+        print(f"AI_REVIEW=completed ({len(reviews)} free model responses)")
+        print(f"AI_REVIEW_REPORT={report}")
+    except Exception as exc:
+        # The video remains buildable when no free provider key is configured
+        # or a provider is rate-limited; no paid fallback is attempted.
+        print(f"AI_REVIEW=skipped ({exc})")
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--hook", default=HOOK)
@@ -100,6 +144,7 @@ def main():
     a = p.parse_args()
     OUT.mkdir(exist_ok=True)
     narration = " ".join([a.hook, a.fact, a.science, a.twist, a.end])
+    optional_ai_review(narration)
     audio = OUT / "narration.mp3"
     asyncio.run(make_voice(narration, audio))
     voice_len = float(probe(audio))
