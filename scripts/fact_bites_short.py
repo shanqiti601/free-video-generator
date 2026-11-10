@@ -137,7 +137,14 @@ def optional_ai_review(narration):
     except Exception as exc:
         # The video remains buildable when no free provider key is configured
         # or a provider is rate-limited; no paid fallback is attempted.
+        report = OUT / "AI-Peer-Review.txt"
+        report.write_text(
+            f"AI peer review was skipped safely: {exc}\\n"
+            "No paid fallback was attempted.\\n",
+            encoding="utf-8",
+        )
         print(f"AI_REVIEW=skipped ({exc})")
+        print(f"AI_REVIEW_REPORT={report}")
 
 
 def main():
