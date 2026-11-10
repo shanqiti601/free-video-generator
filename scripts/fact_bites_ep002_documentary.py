@@ -81,6 +81,8 @@ In the darkness of the deep ocean, a coral branch can be more than a place to at
 
 These are the ancient forests of the deep. Hidden from the surface, built one small animal at a time, and still waiting to be fully explored.
 
+Every branch holds a record of time: a refuge shaped by currents, darkness, and the lives that gather there. The deep ocean is still full of places we have never seen. And in these hidden forests, discovery is only just beginning. The story of the deep is far from over.
+
 This is FACT BITES."""
 def srt_timestamp(seconds):
     ms=round(seconds*1000)
@@ -90,7 +92,7 @@ def srt_timestamp(seconds):
 async def narration():
     p=ROOT/"narration.mp3"
     srt=ROOT/"captions.srt"
-    communicate=Communicate(SCRIPT,voice="en-US-GuyNeural",rate="-8%",volume="+0%")
+    communicate=Communicate(SCRIPT,voice="en-US-ChristopherNeural",rate="-10%",volume="+0%")
     words=[]
     with p.open("wb") as audio:
         async for chunk in communicate.stream():
