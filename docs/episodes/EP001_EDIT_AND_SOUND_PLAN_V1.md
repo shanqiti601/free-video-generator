@@ -31,6 +31,11 @@
 - A06 Bioluminescence: candidate download added to intake workflow; pending technical QC and visual inspection.
 - A07 Deep Discoverer ROV: candidate download added to intake workflow; pending technical QC and visual inspection.
 
+## New visual-review findings — 2026-11-10
+
+- A07 sampled at 15-second intervals reveals a usable mix of deep-ocean establishing shots, ROV equipment/operations, squid, seafloor animals, a deep-sea fish, anemone-like fauna, and an octopus. Avoid interview and crew-at-sea segments when building the cinematic sequence. Candidate visual windows include approximately 45–75 s, 118–160 s, 175–190 s, and 220–300 s; these are contact-sheet observations, not approved final in/out points.
+- A06 is an educational package with shoreline, interview, and graphic layouts. It is not the needed continuous bioluminescent wildlife footage and should not be used as a substitute.
+
 ## Missing footage before picture lock
 
 1. Surface/ocean descent and clear depth transition.
