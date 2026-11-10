@@ -1,4 +1,5 @@
 name: FACT BITES EP002 — Documentary Render
+# Rebuild trigger after correcting the closing-shot source range
 
 on:
   push:
