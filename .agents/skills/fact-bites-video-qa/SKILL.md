@@ -8,27 +8,25 @@ description: Perform technical, visual, audio, subtitle, and publication checks 
 Run this checklist on every final MP4 before calling it ready.
 
 ## Technical
-- Confirm the file exists, is non-empty, and can be decoded from start to finish.
-- Confirm portrait 1080x1920, intended frame rate, and duration of at least 30 seconds.
-- Confirm H.264 video and AAC audio (or document a deliberate alternative).
-- Check for black frames, frozen frames, corrupted segments, abrupt cuts, and accidental letterboxing.
+- Confirm file exists, is non-empty, and decodes from start to finish.
+- Confirm portrait 1080x1920, intended frame rate, H.264 video, AAC audio, and duration of at least 30 seconds.
+- Check black frames, frozen frames, corrupted segments, abrupt cuts, and accidental letterboxing.
 - Confirm audio and video durations are aligned.
 
 ## Editorial and visual
-- Confirm visuals genuinely relate to the narration and do not imply false evidence.
-- Check that footage is not repeated excessively and that motion/crops remain natural.
-- Confirm any required footage credits and license notes are included in metadata or project records.
-- Verify the opening hook is immediately legible and the ending is not cut off.
+- Confirm visuals genuinely relate to narration and do not imply false evidence.
+- Check footage repetition, natural motion/crops, and balanced brightness.
+- Verify the first 3–5 seconds have a strong visual hook and do not begin with a dark slate.
+- On-screen copy must be limited to FACT BITES branding and FACT BITE cards; reject generic subtitles, slogans, CTA text, or end cards unless explicitly requested.
+- Confirm footage credits and license notes are retained.
 
 ## Audio
-- Listen for missing narration, clipping, distortion, excessive noise, and abrupt audio endings.
-- Ensure background ambience/music stays clearly below speech.
-- Confirm all audio is original, public-domain, or properly licensed.
+- Listen for missing narration, clipping, distortion, excessive noise, and abrupt endings.
+- Keep background ambience/music below speech and use only original, public-domain, or properly licensed audio.
 
-## Captions
-- Check spelling, punctuation, timing, safe margins, and readability on a phone-sized screen.
-- Ensure no caption is clipped, overlaps important imagery, or appears too early/late.
-- Confirm caption text matches the spoken narration.
+## On-screen text
+- Check spelling, punctuation, timing, mobile-safe margins, and readability.
+- Confirm card text matches the spoken facts and no text is clipped.
 
 ## Report
-Return PASS / FAIL for each section, list exact defects, and provide the file path and verified media properties. Never claim visual or audio review was performed if only metadata or logs were inspected.
+Return PASS / FAIL for each section, list exact defects, and provide verified media properties. Never claim visual or audio review if only metadata/logs were inspected.

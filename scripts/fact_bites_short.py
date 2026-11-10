@@ -38,11 +38,11 @@ OUT = Path("output")
 NOAA_URL = "https://oceanexplorer.noaa.gov/wp-content/uploads/2018/06/greenland-mp4.mp4"
 VOICE_CANDIDATES = ["en-GB-RyanNeural", "en-US-ChristopherNeural", "en-GB-ThomasNeural"]
 
-HOOK = "Some Greenland sharks may live for centuries. But how old can they really get?"
-FACT = "They move slowly through the cold waters of the North Atlantic and Arctic, growing over many decades."
-SCIENCE = "In a study published in Science, researchers examined the eye lenses of 28 Greenland sharks. The largest was estimated to be about 392 years old — plus or minus roughly 120 years. That is a very wide range, not an exact birthday."
-TWIST = "The study also estimated that females reach sexual maturity at about 156 years old, with an uncertainty of roughly 22 years. Growing up can take more than a century."
-END = "A remarkable animal, measured in centuries rather than decades. Follow Fact Bites for discoveries most people never hear about."
+HOOK = "This shark may live for centuries — and scientists found its age in its eyes."
+FACT = "The Greenland shark drifts through the deep, icy waters of the North Atlantic and Arctic, growing at a remarkably slow pace."
+SCIENCE = "In a study published in Science, researchers examined the eye lenses of 28 Greenland sharks. The largest specimen was estimated to be about 392 years old, with an uncertainty of roughly 120 years — a wide range, not an exact birthday."
+TWIST = "The study also estimated that females reach sexual maturity at about 156 years old, with an uncertainty of roughly 22 years. For this shark, growing up can take more than a century."
+END = "For the Greenland shark, a century is barely a beginning."
 
 def run(cmd):
     subprocess.run(cmd, check=True)
@@ -60,44 +60,21 @@ def ass_time(seconds):
     s, c = divmod(cs, 100)
     return f"{h}:{m:02}:{s:02}.{c:02}"
 
-def write_ass(text, seconds, path):
-    words = text.split()
-    # Short captions in a centered mobile-safe area; explicit wrapping avoids edge overflow.
-    chunks = [" ".join(words[i:i+4]) for i in range(0, len(words), 4)]
+def write_ass(seconds, path):
+    """Render only the Fact Bites brand and concise fact cards, never full subtitles."""
     rows = [
         "[Script Info]", "ScriptType: v4.00+", "PlayResX: 1080", "PlayResY: 1920", "WrapStyle: 0",
         "[V4+ Styles]",
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        "Style: Default,DejaVu Sans,46,&H00FFFFFF,&H0000C8FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,3,2,2,110,110,260,1",
-        "Style: Brand,DejaVu Sans,58,&H0000D7FF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,3,1,8,90,90,100,1",
-        "Style: Intro,DejaVu Sans,62,&H00FFFFFF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,0,0,1,4,2,8,100,100,245,1",
-        "Style: EndCard,DejaVu Sans,76,&H00FFFFFF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,4,2,5,90,90,0,1",
-        "Style: Fact,DejaVu Sans,40,&H0000F2FF,&H0000F2FF,&H00101A29,&HCC071321,1,0,0,0,100,100,1,0,1,3,1,7,78,78,260,1",
+        "Style: Brand,DejaVu Sans,54,&H0000D7FF,&H0000D7FF,&H00101A29,&H90000000,1,0,0,0,100,100,1,0,1,3,1,8,90,90,105,1",
+        "Style: Fact,DejaVu Sans,46,&H0000F2FF,&H0000F2FF,&H00101A29,&HCC071321,1,0,0,0,100,100,1,0,1,3,1,8,92,92,430,1",
         "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
-        f"Dialogue: 1,0:00:00.00,{ass_time(seconds + 3.0)},Brand,,0,0,0,,FACT BITES",
-        f"Dialogue: 2,0:00:00.00,0:00:04.00,Intro,,0,0,0,,THE SHARK THAT CAN LIVE FOR CENTURIES",
-        f"Dialogue: 3,{ass_time(seconds + 0.2)},{ass_time(seconds + 3.2)},EndCard,,0,0,0,,FACT BITES\\NREAL STORIES. EXTRAORDINARY FACTS.",
-        f"Dialogue: 4,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  SLOW-GROWING GIANT",
-        f"Dialogue: 4,{ass_time(seconds * 0.39)},{ass_time(seconds * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
-        f"Dialogue: 4,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS"
+        f"Dialogue: 1,0:00:00.00,{ass_time(min(seconds, 3.0))},Brand,,0,0,0,,FACT BITES",
+        f"Dialogue: 2,{ass_time(seconds * 0.12)},{ass_time(seconds * 0.25)},Fact,,0,0,0,,FACT BITE 01  •  SLOW-GROWING GIANT",
+        f"Dialogue: 2,{ass_time(seconds * 0.39)},{ass_time(seconds * 0.55)},Fact,,0,0,0,,FACT BITE 02  •  392 ± 120 YEARS (EST.)",
+        f"Dialogue: 2,{ass_time(seconds * 0.68)},{ass_time(seconds * 0.83)},Fact,,0,0,0,,FACT BITE 03  •  MATURITY: 156 ± 22 YEARS",
     ]
-    total = max(1, len(words)); cursor = 0
-    for chunk in chunks:
-        n = len(chunk.split())
-        start = seconds * cursor / total
-        cursor += n
-        end = seconds * cursor / total
-        parts = chunk.split()
-        line1, line2 = [], []
-        for word in parts:
-            candidate = " ".join(line1 + [word])
-            if len(candidate) <= 22 and not line2:
-                line1.append(word)
-            else:
-                line2.append(word)
-        caption = " ".join(line1 + ([r"\N"] if line2 else []) + line2)
-        rows.append(f"Dialogue: 0,{ass_time(start)},{ass_time(end)},Default,,0,0,0,,{caption}")
-    path.write_text("\n".join(rows) + "\n", encoding="utf-8")
+    path.write_text("\\n".join(rows) + "\\n", encoding="utf-8")
 
 async def make_voice(text, path):
     last = None
@@ -197,38 +174,44 @@ def main():
     source_len = float(probe(footage))
     print(f"SOURCE_FOOTAGE_SECONDS={source_len:.2f}")
 
-    # Build a cinematic vertical sequence from the real NOAA ROV encounter.
-    # Alternating crop positions and a gentle push-in keep the frame alive without fake illustrations.
-    segment = target / 4
+    # Three fast, relevant footage cuts make the first five seconds visually immediate.
+    intro_durations = [1.6, 1.7, 1.7]
+    main_duration = target - sum(intro_durations)
+    segment = main_duration / 4
+    usable = max(1.0, source_len - segment * 0.85 - 12.0)
     clips = []
-    for i in range(4):
-        clip = OUT / f"shot_{i+1}.mp4"
-        # Use a slightly different crop center for each shot, with a slow push-in.
-        xexpr = ["iw/2-(iw/zoom/2)", "iw*0.46-(iw/zoom/2)", "iw*0.54-(iw/zoom/2)", "iw/2-(iw/zoom/2)"][i]
-        # Fill the complete 9:16 canvas with real footage (no letterbox bands).
-        # The NOAA shark is near the center of frame; a centered vertical crop keeps the subject prominent.
+
+    def make_shot(filename, start, duration):
+        clip = OUT / filename
         vf = (
             "scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,"
-            "crop=1080:1920,"
-            "hqdn3d=1.0:1.0:3:3,eq=contrast=1.03:saturation=1.12:brightness=0.19:gamma=1.22:gamma_weight=0.85,"
-            "unsharp=7:7:0.55:5:5:0.0,setsar=1,format=yuv420p"
+            "crop=1080:1920,hqdn3d=1.0:1.0:3:3,"
+            "eq=contrast=1.05:saturation=1.10:brightness=0.14:gamma=1.16:gamma_weight=0.85,"
+            "unsharp=5:5:0.45:5:5:0.0,"
+            "zoompan=z='min(zoom+0.0007,1.055)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,"
+            "setsar=1,format=yuv420p"
         )
-        # Skip NOAA's original black title slate so the story opens on actual underwater footage.
-        usable = max(1.0, source_len - segment * 0.85 - 12.0)
-        start = 12.0 + (i * usable) / 3
         run(["ffmpeg","-y","-loglevel","error","-ss",f"{start:.2f}","-stream_loop","-1","-i",str(footage),
-             "-t",f"{segment:.2f}","-vf",vf,"-an","-c:v","libx264","-preset","medium",
+             "-t",f"{duration:.2f}","-vf",vf,"-an","-c:v","libx264","-preset","medium",
              "-crf","18","-pix_fmt","yuv420p",str(clip)])
         clips.append(clip)
 
+    hook_positions = [12.0, 12.0 + usable * 0.38, 12.0 + usable * 0.76]
+    for i, duration in enumerate(intro_durations):
+        make_shot(f"hook_{i+1}.mp4", hook_positions[i], duration)
+    for i in range(4):
+        make_shot(f"story_{i+1}.mp4", 12.0 + (i * usable) / 3, segment)
+
     concat = OUT / "shots.txt"
-    concat.write_text("".join(f"file '{x.resolve()}'\n" for x in clips), encoding="utf-8")
+    concat.write_text("".join(f"file '{x.resolve()}'\\n" for x in clips), encoding="utf-8")
     silent = OUT / "documentary_silent.mp4"
     run(["ffmpeg","-y","-loglevel","error","-f","concat","-safe","0","-i",str(concat),
          "-c","copy","-t",f"{target:.2f}",str(silent)])
 
+    # On-screen copy is intentionally limited to FACT BITES branding and fact cards.
     captions = OUT / "captions.ass"
-    write_ass(narration, voice_len, captions)
+    write_ass(target, captions)
+    final = OUT / "Fact-Bites-Short.mp4"
     # Original low-level cinematic drone: synthesized locally, no copyrighted music.
     final = OUT / "Fact-Bites-Short.mp4"
     run([
@@ -238,8 +221,9 @@ def main():
         "[2:a]lowpass=f=180,highpass=f=35,volume=0.035,afade=t=in:st=0:d=3,afade=t=out:st="
         f"{max(0,target-4):.2f}:d=4[amb];"
         "[1:a]highpass=f=75,lowpass=f=9000,acompressor=threshold=0.12:ratio=3:attack=20:release=250,"
-        "volume=1.25[voice];[voice][amb]amix=inputs=2:duration=longest:weights=1 0.28[a]",
-        "-vf",f"subtitles={captions},format=yuv420p",
+        "volume=1.25[voice];[voice][amb]amix=inputs=2:duration=longest:weights=1 0.28,"
+        f"afade=t=out:st={max(0,target-1.5):.2f}:d=1.5[a]",
+        "-vf",f"subtitles={captions},fade=t=out:st={max(0,target-1.4):.2f}:d=1.4,format=yuv420p",
         "-map","0:v:0","-map","[a]","-t",f"{target:.2f}",
         "-c:v","libx264","-preset","medium","-crf","17","-c:a","aac","-b:a","192k",
         "-movflags","+faststart",str(final)
