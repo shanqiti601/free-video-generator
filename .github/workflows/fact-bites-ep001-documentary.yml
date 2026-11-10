@@ -53,6 +53,7 @@ jobs:
           path: |
             output/Fact-Bites-EP001-The-Hidden-World-of-the-Deep-Ocean.mp4
             output/ep001/narration.mp3
+            output/ep001/captions.srt
             output/ep001/FINAL-QA-FFPROBE.json
           if-no-files-found: error
           retention-days: 7
