@@ -7,10 +7,6 @@ chat UI.
 
 ## Supported free-only routes
 
-- Google Gemini API free tier: `GEMINI_API_KEY`, model variable `GEMINI_FREE_MODEL`.
-  The default is `gemini-3.8-flash`; Google's current pricing page lists a free
-  standard tier for this model. Do not enable paid-only features such as paid
-  grounding, priority, or batch routes.
 - OpenRouter: `OPENROUTER_API_KEY`, `OPENROUTER_FREE_MODEL`. Only model IDs
   ending in `:free` or the explicit `openrouter/free` router are accepted.
 - Optional self-hosted FreeLLMAPI: `FREELLMAPI_BASE_URL`,
