@@ -21,12 +21,15 @@ class Provider:
     model_env: str
     default_model: str
     free_only_suffix: str | None = None
+    free_model_ids: tuple[str, ...] = ()
 
     def config(self):
         key = os.getenv(self.api_key_env, "").strip()
-        model = os.getenv(self.model_env, self.default_model).strip()
+        model = os.getenv(self.model_env, "").strip() or self.default_model
         if not key or not model:
             return None
+        if self.free_model_ids and model not in self.free_model_ids:
+            raise ValueError(f"{self.name} model {model!r} is not on the configured free-only allowlist.")
         if self.free_only_suffix and not (model.endswith(self.free_only_suffix) or model == "openrouter/free"):
             raise ValueError(
                 f"{self.name} is restricted to model IDs ending in "
@@ -37,9 +40,11 @@ class Provider:
 
 PROVIDERS = (
     Provider("Gemini", "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-             "GEMINI_API_KEY", "GEMINI_FREE_MODEL", "gemini-3.8-flash"),
+             "GEMINI_API_KEY", "GEMINI_FREE_MODEL", "gemini-3.8-flash",
+             free_model_ids=("gemini-3.8-flash",)),
     Provider("Groq", "https://api.groq.com/openai/v1/chat/completions",
-             "GROQ_API_KEY", "GROQ_FREE_MODEL", "openai/gpt-oss-120b"),
+             "GROQ_API_KEY", "GROQ_FREE_MODEL", "openai/gpt-oss-120b",
+             free_model_ids=("openai/gpt-oss-120b",)),
     Provider("OpenRouter", "https://openrouter.ai/api/v1/chat/completions",
              "OPENROUTER_API_KEY", "OPENROUTER_FREE_MODEL", "openrouter/free",
              free_only_suffix=":free"),
