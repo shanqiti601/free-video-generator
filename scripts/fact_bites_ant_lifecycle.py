@@ -8,12 +8,12 @@ OUT = Path("output")
 ASSET = OUT / "ant"
 ASSET.mkdir(parents=True, exist_ok=True)
 NARRATION = [
-    "Deep beneath the forest floor, a new ant colony begins with one remarkable insect: the queen.",
-    "She lays tiny, pale eggs in a warm, protected nursery chamber. The eggs are clustered together and cared for by workers.",
-    "The eggs hatch into soft, legless larvae. Their bodies are visibly segmented, and worker ants feed them as they grow.",
-    "Next, each larva becomes a pupa. Depending on the species, a pupa may be wrapped in a silken cocoon or remain uncovered. Inside, the adult ant develops.",
-    "A new worker emerges with six legs, a pair of antennae, and three main body sections: head, thorax, and abdomen.",
-    "Workers care for young, maintain tunnels, gather food, and defend the nest. Together, they keep the colony alive."
+    "Welcome to the hidden world beneath our feet! This is an ant nest, a busy underground home with rooms and tunnels.",
+    "The queen lays tiny, soft eggs in a safe nursery. Worker ants gently carry and care for them. An egg is the first stage of an ant's life.",
+    "Soon, an egg hatches into a larva. Look closely: it has no legs yet, and its body has little sections. Worker ants bring it food so it can grow.",
+    "When the larva is ready, it becomes a pupa. Some pupae rest inside a silk cocoon, while others are uncovered. Inside, the adult ant's body takes shape.",
+    "A young adult ant emerges! An ant has six legs, two antennae, and three main body parts: head, thorax, and abdomen. Ants are insects because they have six legs.",
+    "Now the worker joins the team. Some workers care for babies, some explore for food, and others help protect and repair the nest. Each ant helps the colony."
 ]
 VOICE = "en-US-GuyNeural"
 random.seed(12)
@@ -103,96 +103,120 @@ def pupa(draw,x,y,scale=1,cocoon=True):
         draw.line((x-10*scale,y-15*scale,x+10*scale,y+15*scale),fill=(183,148,106),width=2)
 
 def soil_background(im, d):
-    # Layered soil with granular texture, roots, pebbles and a readable surface line.
-    d.rectangle((0,0,W,405),fill=(105,151,133))
-    d.ellipse((-170,-230,900,505),fill=(128,169,137))
-    d.rectangle((0,390,W,H),fill=(112,76,49))
-    d.rectangle((0,390,W,455),fill=(82,62,43))
-    for yy in range(455,H,105):
-        d.line((0,yy,W,yy+random.randint(-8,8)),fill=(139,98,62),width=3)
-    for _ in range(320):
-        x=random.randrange(W); y=random.randrange(455,H)
-        r=random.choice((1,2,2,3))
-        col=random.choice(((151,111,73),(83,57,40),(174,128,81),(96,68,48)))
+    # Bright educational cutaway: lively surface above a richly detailed underground nest.
+    d.rectangle((0,0,W,405),fill=(105,190,224))
+    d.ellipse((535,55,635,155),fill=(255,220,93),outline=(255,244,180),width=5)
+    # soft clouds
+    for x,y in [(90,105),(350,175),(600,235)]:
+        d.ellipse((x,y,x+85,y+38),fill=(239,250,250))
+        d.ellipse((x+20,y-18,x+65,y+35),fill=(239,250,250))
+    # green meadow and layered soil
+    d.rectangle((0,350,W,410),fill=(83,157,77))
+    d.rectangle((0,410,W,H),fill=(160,111,66))
+    d.rectangle((0,410,W,470),fill=(119,83,53))
+    for yy in range(470,H,92):
+        d.line((0,yy,W,yy+random.randint(-7,7)),fill=(185,137,83),width=3)
+    # soil speckles and stones
+    for _ in range(440):
+        x=random.randrange(W); y=random.randrange(465,H)
+        r=random.choice((1,2,2,3,4))
+        col=random.choice(((205,157,99),(111,74,47),(132,91,56),(224,174,111)))
         d.ellipse((x-r,y-r,x+r,y+r),fill=col)
-    # roots descending from the grass line
-    for x in (70,175,570,655):
-        d.line((x,395,x+random.randint(-20,20),470,x+random.randint(-30,30),540),fill=(74,65,39),width=5,joint="curve")
-    # grass tufts
-    for x in range(15,W,35):
-        d.line((x,398,x-8,378),fill=(49,99,63),width=4)
-        d.line((x,398,x+5,374),fill=(55,112,67),width=4)
-    # tunnel network, with dark cavity and warm raised edges
-    d.line([(355,470),(355,555),(280,610),(280,720)],fill=(155,111,70),width=74,joint="curve")
-    d.line([(355,470),(355,555),(280,610),(280,720)],fill=(47,37,31),width=56,joint="curve")
-    d.line([(280,720),(280,820),(360,880)],fill=(155,111,70),width=72,joint="curve")
-    d.line([(280,720),(280,820),(360,880)],fill=(47,37,31),width=54,joint="curve")
-    # large nursery chamber
-    d.ellipse((85,635,645,1110),fill=(155,111,70),outline=(187,137,86),width=5)
-    d.ellipse((105,655,625,1090),fill=(48,37,31),outline=(91,67,49),width=5)
-    # chamber floor bedding
-    for x in range(135,600,27):
-        d.arc((x,1000,x+35,1040),180,340,fill=(89,67,49),width=2)
+    for x,y,r in [(65,570,13),(620,690,18),(95,1030,16),(580,1120,12),(470,520,9)]:
+        d.ellipse((x-r,y-r,x+r,y+r),fill=(104,91,77),outline=(75,65,55),width=3)
+    # grass blades, flowers and visible roots
+    for x in range(10,W,27):
+        d.line((x,407,x-8,378),fill=(38,119,57),width=5)
+        d.line((x,407,x+8,372),fill=(47,139,64),width=5)
+    for x in (115,245,520,660):
+        d.line((x,408,x+random.randint(-18,18),510),fill=(111,80,40),width=5)
+    for x,y in [(135,350),(555,360),(635,345)]:
+        d.line((x,y+20,x,y-10),fill=(42,112,54),width=4)
+        for dx,dy,col in [(-10,0,(255,117,145)),(10,0,(255,219,83)),(0,-9,(255,245,214))]:
+            d.ellipse((x+dx-7,y+dy-7,x+dx+7,y+dy+7),fill=col)
+    # connected tunnels with bright soil rims and dark interior
+    paths=[[(355,455),(355,545),(275,610),(275,700)],
+           [(275,700),(275,805),(365,875)],
+           [(355,545),(470,600),(470,700)]]
+    for path in paths:
+        d.line(path,fill=(213,158,94),width=78,joint="curve")
+        d.line(path,fill=(55,42,34),width=58,joint="curve")
+    # roomy nursery chamber and side room
+    d.ellipse((75,650,640,1115),fill=(207,151,88),outline=(240,190,123),width=6)
+    d.ellipse((94,670,621,1095),fill=(57,43,34),outline=(119,82,53),width=5)
+    d.ellipse((430,570,600,760),fill=(205,150,88),outline=(235,185,119),width=5)
+    d.ellipse((443,583,587,747),fill=(55,42,34),outline=(115,79,50),width=4)
+    for x in range(125,590,24):
+        d.arc((x,1010,x+35,1050),180,340,fill=(111,82,57),width=2)
 
+def pill(draw, x, y, text, fill=(255,245,207), ink=(48,43,35), f=None):
+    f = f or font(17, True)
+    box = draw.textbbox((0,0),text,font=f)
+    w = box[2]-box[0]+24; h = box[3]-box[1]+18
+    draw.rounded_rectangle((x,y,x+w,y+h),radius=14,fill=fill,outline=(255,255,255),width=2)
+    draw.text((x+12,y+7),text,font=f,fill=ink)
 def scene(index,t,total):
     im=Image.new("RGB",(W,H),(34,48,48)); d=ImageDraw.Draw(im)
     soil_background(im,d)
-    titles=["A QUEEN'S NEW BEGINNING","THE TINY EGGS","A HUNGRY LARVA","THE PUPA STAGE","A WORKER EMERGES","LIFE INSIDE THE COLONY"]
-    centered(d,titles[index],55,font(34,True),(255,244,216))
-    shift=int(8*math.sin(t*2))
+    titles=["WELCOME TO THE ANT NEST","STAGE 1 • EGG","STAGE 2 • LARVA","STAGE 3 • PUPA","STAGE 4 • ADULT","A TEAM THAT WORKS TOGETHER"]
+    centered(d,titles[index],42,font(31,True),(255,255,255))
+    shift=int(9*math.sin(t*2.2))
+    # Small lesson panel sits above the progress bar and stays clear of the edges.
     if index==0:
-        ant(d,345+shift,830,2.0,(59,34,27),queen=True)
-        centered(d,"A queen begins a new colony",1120,font(21,True),(255,231,187))
+        ant(d,355+shift,835,1.8,(68,39,28),queen=True)
+        pill(d,38,490,"QUEEN")
+        pill(d,485,510,"NEST TUNNELS")
+        pill(d,42,1125,"A colony is a family of ants")
     elif index==1:
-        for j in range(18):
-            egg(d,190+(j%6)*48,800+(j//6)*42,0.85)
-        ant(d,485-shift,930,0.95)
-        centered(d,"Pale eggs rest together in a nursery",1120,font(20,True),(255,231,187))
+        for j in range(20):
+            egg(d,160+(j%5)*39,805+(j//5)*31,0.72)
+        ant(d,485-shift,930,0.9)
+        pill(d,125,700,"TINY • PALE • OVAL")
+        pill(d,420,1060,"WORKERS CARE FOR EGGS")
     elif index==2:
         for j in range(3):
-            larva(d,220+j*135,825+(j%2)*55,1.05)
-        ant(d,500+shift,970,0.88)
-        centered(d,"Workers feed the growing larvae",1120,font(21,True),(255,231,187))
+            larva(d,190+j*145,825+(j%2)*55,1.0)
+        ant(d,505+shift,970,0.82)
+        pill(d,115,700,"SOFT BODY • NO LEGS")
+        pill(d,405,1060,"WORKERS BRING FOOD")
     elif index==3:
-        pupa(d,235,845,1.0,True); pupa(d,365,850,1.0,False); pupa(d,495,845,1.0,True)
-        centered(d,"An adult ant develops inside",1120,font(21,True),(255,231,187))
+        pupa(d,220,845,0.95,True); pupa(d,365,850,0.95,False); pupa(d,510,845,0.95,True)
+        pill(d,125,700,"COCOONED")
+        pill(d,390,700,"UNCOVERED")
+        pill(d,220,1065,"THE ADULT DEVELOPS INSIDE")
     elif index==4:
-        ant(d,350+shift,850,1.5,(59,34,27))
-        centered(d,"Six legs. Three body sections. Two antennae.",1120,font(18,True),(255,231,187))
+        ant(d,350+shift,850,1.55,(68,39,28))
+        # Clear anatomy callouts
+        pill(d,55,610,"ANTENNAE")
+        d.line((170,635,420,800),fill=(255,246,203),width=3)
+        pill(d,475,760,"HEAD")
+        d.line((475,790,390,835),fill=(255,246,203),width=3)
+        pill(d,55,940,"THORAX")
+        d.line((155,955,335,850),fill=(255,246,203),width=3)
+        pill(d,455,1010,"ABDOMEN")
+        d.line((455,1020,285,865),fill=(255,246,203),width=3)
+        pill(d,220,1090,"COUNT THE 6 LEGS!")
     else:
-        ant(d,350,830,1.55,(59,34,27),queen=True)
-        for x,y,s in [(175,745,.7),(520,745,.7),(175,985,.7),(520,985,.7),(350,1030,.7)]:
-            ant(d,x+int(5*math.sin(t*2+x)),y,s,(75,44,31))
-        centered(d,"Every worker helps the colony survive",1120,font(20,True),(255,231,187))
-    # clean episode progress bar and restrained brand footer
-    d.rounded_rectangle((95,1190,625,1203),radius=7,fill=(39,31,27))
-    d.rounded_rectangle((95,1190,95+530*(index+1)/6,1203),radius=7,fill=(240,190,105))
-    d.text((95,1220),"FACT BITES  •  LIFE CYCLES",font=font(18,True),fill=(255,239,203))
+        ant(d,350,820,1.35,(68,39,28),queen=True)
+        for x,y,s in [(175,735,.62),(520,735,.62),(175,975,.62),(520,975,.62),(350,1030,.62)]:
+            ant(d,x+int(6*math.sin(t*2+x)),y,s,(83,49,31))
+        pill(d,35,540,"NURSE")
+        pill(d,520,540,"FOOD FINDER")
+        pill(d,40,1110,"BUILD • CARE • PROTECT")
+    # Scene-specific learning point in a clean bright strip
+    facts=[
+        "A nest has tunnels, rooms and a nursery",
+        "Eggs are the first stage of an ant's life",
+        "Larvae grow when worker ants feed them",
+        "Inside the pupa, the adult body develops",
+        "Six legs make an ant an insect",
+        "Different jobs help one colony survive"
+    ]
+    d.rounded_rectangle((35,1160,685,1208),radius=18,fill=(255,238,185),outline=(255,255,255),width=2)
+    fb=font(18,True); bb=d.textbbox((0,0),facts[index],font=fb)
+    d.text(((W-(bb[2]-bb[0]))/2,1174),facts[index],font=fb,fill=(63,48,34))
+    d.rounded_rectangle((95,1220,625,1230),radius=6,fill=(54,42,34))
+    d.rounded_rectangle((95,1220,95+530*(index+1)/6,1230),radius=6,fill=(255,204,83))
+    d.text((95,1240),"FACT BITES  •  LIFE CYCLES",font=font(15,True),fill=(255,245,218))
     return im
 
-async def make_voice():
-    await edge_tts.Communicate(" ".join(NARRATION),VOICE,rate="-3%",pitch="-2Hz").save(str(ASSET/"narration.mp3"))
-
-def probe_duration(path):
-    return float(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","default=noprint_wrappers=1:nokey=1",str(path)]).decode().strip())
-
-asyncio.run(make_voice())
-audio=ASSET/"narration.mp3"; duration=probe_duration(audio); scene_len=duration/len(NARRATION)
-raw=subprocess.Popen(["ffmpeg","-y","-f","rawvideo","-pix_fmt","rgb24","-s",f"{W}x{H}","-r",str(FPS),"-i","-","-an","-c:v","libx264","-preset","veryfast","-crf","19","-pix_fmt","yuv420p",str(OUT/"ant-silent.mp4")],stdin=subprocess.PIPE)
-for i in range(len(NARRATION)):
-    for n in range(max(1,round(scene_len*FPS))):
-        raw.stdin.write(scene(i,n/FPS,scene_len).tobytes())
-raw.stdin.close()
-if raw.wait()!=0: raise RuntimeError("FFmpeg animation render failed")
-final=OUT/"FACT-BITES-ANT-LIFE-CYCLE.mp4"
-subprocess.run(["ffmpeg","-y","-i",str(OUT/"ant-silent.mp4"),"-i",str(audio),"-map","0:v:0","-map","1:a:0","-c:v","copy","-c:a","aac","-b:a","160k","-shortest","-movflags","+faststart",str(final)],check=True)
-(OUT/"ant-silent.mp4").unlink(missing_ok=True)
-
-def stamp(s):
-    ms=int(round(s*1000)); h=ms//3600000; ms%=3600000; m=ms//60000; ms%=60000; sec=ms//1000; ms%=1000
-    return f"{h:02}:{m:02}:{sec:02},{ms:03}"
-srt=[]
-for i,line in enumerate(NARRATION):
-    srt += [str(i+1),f"{stamp(i*scene_len)} --> {stamp(min(duration,(i+1)*scene_len))}",line,""]
-(ASSET/"captions.srt").write_text("\n".join(srt),encoding="utf-8")
-print(json.dumps({"video":str(final),"duration_seconds":round(duration,1),"captions":str(ASSET/"captions.srt"),"voice":VOICE,"visual_revision":"detailed ant anatomy, rice-shaped eggs, segmented larvae, pupae, textured soil layers and visible tunnels"}))
