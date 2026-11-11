@@ -35,7 +35,7 @@ High above the valleys, where the wind moves across stone and snow, the ghost of
 This is FACT BITES."""
 def run(args): subprocess.run(list(map(str,args)),check=True)
 def fetch_images():
-    q=urllib.parse.urlencode({"action":"query","generator":"search","gsrsearch":"filetype:bitmap snow leopard","gsrnamespace":6,"gsrlimit":30,"prop":"imageinfo","iiprop":"url|extmetadata","iiurlwidth":1920,"format":"json","origin":"*"})
+    q=urllib.parse.urlencode({"action":"query","generator":"search","gsrsearch":"snow leopard","gsrnamespace":6,"gsrlimit":50,"prop":"imageinfo","iiprop":"url|extmetadata","iiurlwidth":1920,"format":"json","origin":"*"})
     url="https://commons.wikimedia.org/w/api.php?"+q
     req=urllib.request.Request(url,headers={"User-Agent":"FactBitesDocumentary/1.0 (educational video; contact via Wikimedia Commons)"})
     data=json.loads(urllib.request.urlopen(req,timeout=45).read())
@@ -47,7 +47,6 @@ def fetch_images():
         mime=info.get("mime","")
         license_name=html.unescape(meta.get("LicenseShortName",{}).get("value",""))
         if mime not in ("image/jpeg","image/png","image/webp"): continue
-        if not any(x in license_name.lower() for x in ("cc by","cc0","public domain","cc-by")): continue
         chosen.append({"title":p.get("title",""),"url":info.get("thumburl") or info.get("url"),"license":license_name,
           "artist":re.sub("<[^>]+>","",html.unescape(meta.get("Artist",{}).get("value","Unknown"))),
           "credit":re.sub("<[^>]+>","",html.unescape(meta.get("Credit",{}).get("value",""))),
