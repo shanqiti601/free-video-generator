@@ -139,7 +139,7 @@ async def narration():
     return p,srt
 def make_segment(src,start,dur,out,label):
     # Clean cinematic frame: no chapter bars or labels over source footage.
-    vf=("crop=iw:ih*0.82:0:0,scale=1920:1080:flags=lanczos,setsar=1,fps=30,format=yuv420p")
+    vf=("crop=iw:ih*0.76:0:0,scale=-2:1080:flags=lanczos,crop=1920:1080,setsar=1,fps=30,format=yuv420p")
     if label == "FACT BITES":
         vf += ",drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='FACT BITES':fontcolor=white:fontsize=42:x=80:y=70:shadowcolor=black@0.45:shadowx=2:shadowy=2"
     run(["ffmpeg","-y","-ss",str(start),"-i",str(src),"-t",str(dur),"-an","-vf",vf,
@@ -173,7 +173,7 @@ def main():
     final=pathlib.Path("output/Fact-Bites-EP002-The-Ancient-Forests-of-the-Deep.mp4")
     final.parent.mkdir(exist_ok=True)
     dur=probe_duration(silent)
-    subtitle_filter="subtitles="+str(captions.resolve())+":force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=8,MarginV=90'"
+    subtitle_filter="subtitles="+str(captions.resolve())+":force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=105'"
     run(["ffmpeg","-y","-i",silent,"-i",voice,"-f","lavfi","-i",
          "anoisesrc=color=pink:amplitude=0.018:sample_rate=48000",
          "-filter_complex",
@@ -186,4 +186,24 @@ def main():
     (ROOT/"FINAL-QA-FFPROBE.json").write_text(report)
     print("FINAL_VIDEO="+str(final),flush=True)
     print("DURATION_SECONDS="+str(round(probe_duration(final),2)),flush=True)
+
+    # Three vertical social cuts: preserve the complete 16:9 footage in a sharp
+    # centered panel over a softly blurred vertical background.
+    social=pathlib.Path("output/social"); social.mkdir(parents=True,exist_ok=True)
+    reels=[("01-The-Forest-Hook",0,40),("02-Life-In-The-Branches",105,40),("03-Protect-The-Ancient-Gardens",245,40)]
+    for name,start,duration in reels:
+        out=social/(name+".mp4")
+        vf=("[0:v]split=2[bg][fg];"
+            "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,"
+            "boxblur=24:8,eq=brightness=-0.16:saturation=0.8[blur];"
+            "[fg]scale=1080:608:force_original_aspect_ratio=decrease:flags=lanczos,"
+            "pad=1080:608:(ow-iw)/2:(oh-ih)/2:black[main];"
+            "[blur][main]overlay=0:(H-h)/2,"
+            "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:"
+            "text='FACT BITES':fontcolor=white:fontsize=42:x=(w-text_w)/2:y=95:"
+            "shadowcolor=black@0.6:shadowx=2:shadowy=2,format=yuv420p[v]")
+        run(["ffmpeg","-y","-ss",str(start),"-i",str(final),"-t",str(duration),
+             "-filter_complex",vf,"-map","[v]","-map","0:a:0?",
+             "-c:v","libx264","-preset","veryfast","-crf","20","-pix_fmt","yuv420p",
+             "-c:a","aac","-b:a","160k",str(out)])
 if __name__=="__main__": main()
