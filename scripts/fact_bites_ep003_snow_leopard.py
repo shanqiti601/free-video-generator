@@ -92,8 +92,8 @@ def main():
     clips=[]
     for i,img in enumerate(images):
         p=SEGS/f"{i:02d}.mp4"
-        vf="scale=1600:900:force_original_aspect_ratio=increase,crop=1600:900,zoompan=z='min(zoom+0.00055,1.08)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=225:s=1280x720:fps=25,format=yuv420p"
-        run(["ffmpeg","-y","-loop","1","-i",img,"-t","9","-vf",vf,"-an","-c:v","libx264","-preset","veryfast","-crf","20",p])
+        vf="scale=1600:900:force_original_aspect_ratio=increase,crop=1600:900,zoompan=z='min(zoom+0.00055,1.08)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=300:s=1280x720:fps=25,format=yuv420p"
+        run(["ffmpeg","-y","-loop","1","-i",img,"-t","12","-vf",vf,"-an","-c:v","libx264","-preset","veryfast","-crf","20",p])
         clips.append(p)
     listing=OUT/"concat.txt"; listing.write_text("".join(f"file '{p.resolve()}'\n" for p in clips))
     silent=OUT/"picture.mp4"; run(["ffmpeg","-y","-f","concat","-safe","0","-i",listing,"-c","copy",silent])
