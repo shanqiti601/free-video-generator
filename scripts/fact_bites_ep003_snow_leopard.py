@@ -35,21 +35,21 @@ High above the valleys, where the wind moves across stone and snow, the ghost of
 This is FACT BITES."""
 def run(args): subprocess.run(list(map(str,args)),check=True)
 def fetch_images():
-    # Direct original files from verified public-domain / CC0 / CC BY-SA Commons records.
-    files=[
-      {"title":"Snow leopard.jpg","url":"https://upload.wikimedia.org/wikipedia/commons/3/36/Snow_leopard.jpg","license":"Public domain (USFWS)","artist":"Ron Singer, U.S. Fish and Wildlife Service","source":"https://commons.wikimedia.org/wiki/File:Snow_leopard.jpg"},
-      {"title":"Snow leopard (1985510).jpg","url":"https://upload.wikimedia.org/wikipedia/commons/6/69/Snow_leopard_%281985510%29.jpg","license":"CC0 1.0","artist":"strichpunkt / Pixabay","source":"https://commons.wikimedia.org/wiki/File:Snow_leopard_(1985510).jpg"},
-      {"title":"Snow leopard sleeping - Buffalo Zoo.jpg","url":"https://upload.wikimedia.org/wikipedia/commons/8/87/Snow_leopard_sleeping_-_Buffalo_Zoo.jpg","license":"Public domain (author release)","artist":"Dave Pape","source":"https://commons.wikimedia.org/wiki/File:Snow_leopard_sleeping_-_Buffalo_Zoo.jpg"},
-      {"title":"Snow Leopard 13.jpg","url":"https://upload.wikimedia.org/wikipedia/commons/a/a4/Snow_Leopard_13.jpg","license":"CC BY-SA 3.0","artist":"Ltshears","source":"https://commons.wikimedia.org/wiki/File:Snow_Leopard_13.jpg"}
+    clips=[
+      {"url":"https://www.pexels.com/download/video/35922407/","credit":"Irina Fedotova — Pexels Free License","source":"https://www.pexels.com/video/snow-leopard-in-winter-enclosure-35922368/"},
+      {"url":"https://www.pexels.com/download/video/36832099/","credit":"Irina Fedotova — Pexels Free License","source":"https://www.pexels.com/video/snow-leopard-resting-in-snowy-enclosure-36832132/"},
+      {"url":"https://www.pexels.com/download/video/35475822/","credit":"Irina Fedotova — Pexels Free License","source":"https://www.pexels.com/video/snow-leopard-resting-on-snowy-platform-in-winter-35475865/"}
     ]
-    (OUT/"image-credits.json").write_text(json.dumps(files,indent=2),encoding="utf-8")
+    (OUT/"video-credits.json").write_text(json.dumps(clips,indent=2),encoding="utf-8")
     paths=[]
-    headers={"User-Agent":"Mozilla/5.0 (compatible; FactBitesDocumentary/1.0)"}
-    for i,item in enumerate(files):
-        p=ASSETS/f"{i:02d}.jpg"
+    headers={"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
+    for i,item in enumerate(clips):
+        p=ASSETS/f"{i:02d}.mp4"
         req=urllib.request.Request(item["url"],headers=headers)
-        with urllib.request.urlopen(req,timeout=90) as r: p.write_bytes(r.read())
-        if p.stat().st_size<15000: raise RuntimeError(f"Image download too small: {item['title']}")
+        with urllib.request.urlopen(req,timeout=120) as r: p.write_bytes(r.read())
+        if p.stat().st_size<100000: raise RuntimeError(f"Pexels clip download failed or too small: {item['source']}")
+        probe=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-show_format","-of","json",p],text=True))
+        if not any(s.get("codec_type")=="video" for s in probe["streams"]): raise RuntimeError(f"Invalid Pexels MP4: {item['source']}")
         paths.append(p)
     return paths
 def ts(v):
@@ -75,35 +75,36 @@ async def make_voice():
     srt.write_text("\n".join(rows),encoding="utf-8")
     return mp3,srt
 def main():
-    images=fetch_images()
+    clips=fetch_images()
     voice,srt=asyncio.run(make_voice())
-    # Create a slow, restrained documentary move from every licensed photograph.
-    clips=[]
-    for i,img in enumerate(images):
-        p=SEGS/f"{i:02d}.mp4"
-        vf="scale=1600:900:force_original_aspect_ratio=increase,crop=1600:900,zoompan=z='min(zoom+0.00055,1.08)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=300:s=1280x720:fps=25,format=yuv420p"
-        run(["ffmpeg","-y","-loop","1","-i",img,"-t","12","-vf",vf,"-an","-c:v","libx264","-preset","veryfast","-crf","20",p])
-        clips.append(p)
-    listing=OUT/"concat.txt"; listing.write_text("".join(f"file '{p.resolve()}'\n" for p in clips))
+    voice_duration=float(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",voice],text=True).strip())
+    segments=[]
+    for i in range(int(voice_duration//12)+2):
+        src=clips[i%len(clips)]
+        meta=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","json",src],text=True))["format"]
+        src_duration=float(meta["duration"])
+        start=max(0.0,min((i*5.7)%(max(1,src_duration-13)),src_duration-12.2))
+        out=SEGS/f"{i:02d}.mp4"
+        vf="scale=1600:900:force_original_aspect_ratio=increase,crop=1600:900,setsar=1,fps=25,format=yuv420p"
+        run(["ffmpeg","-y","-ss",str(start),"-i",src,"-t","12","-vf",vf,"-an","-c:v","libx264","-preset","veryfast","-crf","20",out])
+        segments.append(out)
+    listing=OUT/"concat.txt"; listing.write_text("".join(f"file '{p.resolve()}'\\n" for p in segments))
     silent=OUT/"picture.mp4"; run(["ffmpeg","-y","-f","concat","-safe","0","-i",listing,"-c","copy",silent])
-    # Mix quiet original ambience with the deep narration; burn readable English subtitles.
     subtitle="subtitles="+str(srt.resolve())+":force_style='FontName=DejaVu Sans,FontSize=18,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101828,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=48'"
     run(["ffmpeg","-y","-i",silent,"-i",voice,"-f","lavfi","-i","anoisesrc=color=pink:amplitude=0.008:sample_rate=48000",
       "-filter_complex","[1:a]aresample=48000,volume=1.0[v];[2:a]lowpass=f=160,volume=0.06[a];[v][a]amix=inputs=2:duration=first,loudnorm=I=-16:TP=-1.5:LRA=11[m]",
       "-vf",subtitle,"-map","0:v:0","-map","[m]","-shortest","-c:v","libx264","-preset","veryfast","-crf","19","-pix_fmt","yuv420p","-c:a","aac","-b:a","160k","-movflags","+faststart",VIDEO])
-    # Add a clean branded end frame; no extra slogan or opening title.
-    duration=float(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","csv=p=0",VIDEO],text=True).strip())
-    (OUT/"Research-Sources.txt").write_text("Primary fact references:\nhttps://www.worldwildlife.org/resources/facts/where-do-snow-leopards-live-and-nine-other-snow-leopard-facts/\nhttps://snowleopard.org/snow-leopard-facts/physical-features/\nhttps://www.catsg.org/living-species-snowleopard\n\nImage credits and license details: image-credits.json\n",encoding="utf-8")
-    probe=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-show_format","-of","json",VIDEO],text=True))
-    assert any(x.get("codec_type")=="video" for x in probe["streams"])
-    assert any(x.get("codec_type")=="audio" for x in probe["streams"])
-    assert duration>120, f"Video too short: {duration}"
-    (OUT/"FINAL-QA-FFPROBE.json").write_text(json.dumps(probe,indent=2))
-    # One English-language vertical cut for Instagram; no translated captions.
     social=pathlib.Path("output/social"); social.mkdir(parents=True,exist_ok=True)
     reel=social/"FACT-BITES-EP003-Instagram-Reel.mp4"
     run(["ffmpeg","-y","-i",VIDEO,"-t","60","-filter_complex",
       "[0:v]split=2[bg][fg];[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=24:12[blur];[fg]scale=1080:608:force_original_aspect_ratio=decrease[main];[blur][main]overlay=(W-w)/2:(H-h)/2,format=yuv420p[v]",
       "-map","[v]","-map","0:a:0","-c:v","libx264","-preset","veryfast","-crf","21","-c:a","aac","-b:a","160k","-movflags","+faststart",reel])
-    print("FINAL_VIDEO="+str(VIDEO)); print("INSTAGRAM_REEL="+str(reel)); print("DURATION_SECONDS="+str(round(duration,1))); print("IMAGE_COUNT="+str(len(images))); print("QA=PASS")
+    (OUT/"Research-Sources.txt").write_text("Primary fact references:\\nhttps://www.worldwildlife.org/resources/facts/where-do-snow-leopards-live-and-nine-other-snow-leopard-facts/\\nhttps://snowleopard.org/snow-leopard-facts/physical-features/\\nhttps://www.catsg.org/living-species-snowleopard\\n\\nVisual credits: Irina Fedotova, Pexels Free License. See video-credits.json for source pages.\\n",encoding="utf-8")
+    probe=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-show-format","-of","json",VIDEO],text=True))
+    assert any(x.get("codec_type")=="video" for x in probe["streams"])
+    assert any(x.get("codec_type")=="audio" for x in probe["streams"])
+    duration=float(probe["format"]["duration"])
+    assert duration>120, f"Video too short: {duration}"
+    (OUT/"FINAL-QA-FFPROBE.json").write_text(json.dumps(probe,indent=2))
+    print("FINAL_VIDEO="+str(VIDEO)); print("INSTAGRAM_REEL="+str(reel)); print("DURATION_SECONDS="+str(round(duration,1))); print("CLIP_COUNT="+str(len(clips))); print("QA=PASS")
 if __name__=="__main__": main()
