@@ -48,7 +48,7 @@ jobs:
             assert any(s.get('codec_type')=='audio' for s in d['streams'])
             print(f'QA_PASS {p} duration={d["format"]["duration"]} size={p.stat().st_size}')
           assert pathlib.Path('output/ep003/captions.srt').stat().st_size > 0
-          assert pathlib.Path('output/ep003/image-credits.json').stat().st_size > 0
+          assert pathlib.Path('output/ep003/video-credits.json').stat().st_size > 0
           PY
       - uses: actions/upload-artifact@v4
         with:
@@ -59,7 +59,7 @@ jobs:
             output/ep003/narration.mp3
             output/ep003/captions.srt
             output/ep003/Research-Sources.txt
-            output/ep003/image-credits.json
+            output/ep003/video-credits.json
             output/ep003/FINAL-QA-FFPROBE.json
           if-no-files-found: error
           retention-days: 7
