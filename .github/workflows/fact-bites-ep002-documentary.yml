@@ -58,3 +58,5 @@ jobs:
             output/ep002/FINAL-QA-FFPROBE.json
           if-no-files-found: error
           retention-days: 7
+
+# Rebuild with cleaned picture and top-positioned captions.
