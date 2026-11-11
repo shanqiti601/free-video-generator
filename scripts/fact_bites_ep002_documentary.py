@@ -158,7 +158,8 @@ def main():
       ("C01",8,34,"DISCOVERING HIDDEN REEFS"),
       ("C07",10,34,"FRAGILE LIVING STRUCTURES"),
       ("C04",48,26,"FACT BITES")
-    ]    concat=[]
+    ]
+    concat=[]
     for i,(key,start,dur,label) in enumerate(plan):
         src=ASSETS/(key+".mp4")
         if start+dur>probe_duration(src): raise RuntimeError(f"Invalid range {key} {start}+{dur}")
