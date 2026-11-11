@@ -35,32 +35,20 @@ High above the valleys, where the wind moves across stone and snow, the ghost of
 This is FACT BITES."""
 def run(args): subprocess.run(list(map(str,args)),check=True)
 def fetch_images():
-    # Curated Wikimedia Commons files with verified public-domain or Creative Commons licenses.
+    # Direct original files from verified public-domain / CC0 / CC BY-SA Commons records.
     files=[
-      ("Snow leopard in snow.jpg","JoelAtNiabiZoo","CC BY-SA 4.0"),
-      ("Snow leopard (3757699685).jpg","Marie Hale","CC BY 2.0"),
-      ("The snow leopard.jpg","Marian78ro","CC BY-SA 4.0"),
-      ("Snow leopard in fully covered snow.jpg","In india travel","CC BY-SA 4.0"),
-      ("Snow leopard at the San Diego Zoo.jpg","Kong of Lasers","CC BY 3.0"),
-      ("Snow leopard.jpg","Ron Singer / U.S. Fish and Wildlife Service","Public domain"),
-      ("Snow leopard 1.jpg","Kchritz","CC BY-SA 4.0"),
-      ("Snow Leopard zoo.jpg","Atharva Puranik","CC BY-SA 4.0"),
-      ("Chapultepec Zoo - Snow leopard.jpg","Katie Chan","CC BY-SA 4.0"),
-      ("Snow leopard by Nicolas Goulet.jpg","Nicolas Goulet","CC BY 2.0"),
-      ("SnowLeopard.jpg","C. J. Cornish (1902)","Public domain")
+      {"title":"Snow leopard.jpg","url":"https://upload.wikimedia.org/wikipedia/commons/3/36/Snow_leopard.jpg","license":"Public domain (USFWS)","artist":"Ron Singer, U.S. Fish and Wildlife Service","source":"https://commons.wikimedia.org/wiki/File:Snow_leopard.jpg"},
+      {"title":"Snow leopard (1985510).jpg","url":"https://upload.wikimedia.org/wikipedia/commons/6/69/Snow_leopard_%281985510%29.jpg","license":"CC0 1.0","artist":"strichpunkt / Pixabay","source":"https://commons.wikimedia.org/wiki/File:Snow_leopard_(1985510).jpg"},
+      {"title":"Snow leopard sleeping - Buffalo Zoo.jpg","url":"https://upload.wikimedia.org/wikipedia/commons/8/87/Snow_leopard_sleeping_-_Buffalo_Zoo.jpg","license":"Public domain (author release)","artist":"Dave Pape","source":"https://commons.wikimedia.org/wiki/File:Snow_leopard_sleeping_-_Buffalo_Zoo.jpg"},
+      {"title":"Snow Leopard 13.jpg","url":"https://upload.wikimedia.org/wikipedia/commons/a/a4/Snow_Leopard_13.jpg","license":"CC BY-SA 3.0","artist":"Ltshears","source":"https://commons.wikimedia.org/wiki/File:Snow_Leopard_13.jpg"}
     ]
-    chosen=[]
-    for i,(name,artist,license_name) in enumerate(files):
-        url="https://commons.wikimedia.org/wiki/Special:Redirect/file/"+urllib.parse.quote(name.replace(" ","_"))
-        chosen.append({"title":name,"url":url,"license":license_name,"artist":artist,
-          "credit":f"{artist} — {license_name}","source":"https://commons.wikimedia.org/wiki/File:"+urllib.parse.quote(name.replace(" ","_"))})
-    (OUT/"image-credits.json").write_text(json.dumps(chosen,indent=2),encoding="utf-8")
+    (OUT/"image-credits.json").write_text(json.dumps(files,indent=2),encoding="utf-8")
     paths=[]
-    headers={"User-Agent":"FactBitesDocumentary/1.0"}
-    for i,item in enumerate(chosen):
+    headers={"User-Agent":"Mozilla/5.0 (compatible; FactBitesDocumentary/1.0)"}
+    for i,item in enumerate(files):
         p=ASSETS/f"{i:02d}.jpg"
         req=urllib.request.Request(item["url"],headers=headers)
-        with urllib.request.urlopen(req,timeout=60) as r: p.write_bytes(r.read())
+        with urllib.request.urlopen(req,timeout=90) as r: p.write_bytes(r.read())
         if p.stat().st_size<15000: raise RuntimeError(f"Image download too small: {item['title']}")
         paths.append(p)
     return paths
