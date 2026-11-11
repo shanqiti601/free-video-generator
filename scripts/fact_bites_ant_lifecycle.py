@@ -220,3 +220,76 @@ def scene(index,t,total):
     d.text((95,1240),"FACT BITES  •  LIFE CYCLES",font=font(15,True),fill=(255,245,218))
     return im
 
+async def make_voice():
+    await edge_tts.Communicate(" ".join(NARRATION), VOICE, rate="-3%", pitch="-2Hz").save(str(ASSET / "narration.mp3"))
+
+def probe_duration(path):
+    return float(subprocess.check_output([
+        "ffprobe", "-v", "error", "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1", str(path)
+    ]).decode().strip())
+
+asyncio.run(make_voice())
+audio = ASSET / "narration.mp3"
+if not audio.is_file() or audio.stat().st_size == 0:
+    raise RuntimeError("Narration audio was not created")
+duration = probe_duration(audio)
+scene_len = duration / len(NARRATION)
+silent = OUT / "ant-silent.mp4"
+raw = subprocess.Popen([
+    "ffmpeg", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
+    "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-an",
+    "-c:v", "libx264", "-preset", "veryfast", "-crf", "19",
+    "-pix_fmt", "yuv420p", str(silent)
+], stdin=subprocess.PIPE)
+try:
+    for i in range(len(NARRATION)):
+        frame_count = max(1, round(scene_len * FPS))
+        for n in range(frame_count):
+            raw.stdin.write(scene(i, n / FPS, scene_len).tobytes())
+    raw.stdin.close()
+    if raw.wait() != 0:
+        raise RuntimeError("FFmpeg silent-video render failed")
+except Exception:
+    if raw.stdin and not raw.stdin.closed:
+        raw.stdin.close()
+    raw.kill()
+    raw.wait()
+    raise
+
+final = OUT / "FACT-BITES-ANT-LIFE-CYCLE.mp4"
+subprocess.run([
+    "ffmpeg", "-y", "-i", str(silent), "-i", str(audio),
+    "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy",
+    "-c:a", "aac", "-b:a", "160k", "-shortest",
+    "-movflags", "+faststart", str(final)
+], check=True)
+silent.unlink(missing_ok=True)
+if not final.is_file() or final.stat().st_size < 100_000:
+    raise RuntimeError("Final MP4 is missing or unexpectedly small")
+
+def stamp(seconds):
+    ms = int(round(seconds * 1000))
+    h, ms = divmod(ms, 3_600_000)
+    m, ms = divmod(ms, 60_000)
+    sec, ms = divmod(ms, 1000)
+    return f"{h:02}:{m:02}:{sec:02},{ms:03}"
+
+srt = []
+for i, line in enumerate(NARRATION):
+    start = i * scene_len
+    end = min(duration, (i + 1) * scene_len)
+    srt.extend([str(i + 1), f"{stamp(start)} --> {stamp(end)}", line, ""])
+caption_file = ASSET / "captions.srt"
+caption_file.write_text("\\n".join(srt), encoding="utf-8")
+if not caption_file.is_file() or caption_file.stat().st_size < 100:
+    raise RuntimeError("Subtitle file was not created correctly")
+
+print(json.dumps({
+    "video": str(final),
+    "video_bytes": final.stat().st_size,
+    "duration_seconds": round(duration, 1),
+    "captions": str(caption_file),
+    "caption_bytes": caption_file.stat().st_size,
+    "voice": VOICE
+}))
