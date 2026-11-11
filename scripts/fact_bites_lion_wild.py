@@ -129,12 +129,12 @@ def make_endcard(path, width, height, duration):
     run([
         "ffmpeg", "-y", "-f", "lavfi", "-i",
         f"color=c=0x071426:s={width}x{height}:r=25:d={duration}",
+        "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000",
         "-vf",
         "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:"
         "text='FACT BITES':fontcolor=0x00D9FF:fontsize="
         + ("96" if width > height else "76")
         + ":x=(w-text_w)/2:y=(h-text_h)/2",
-        "-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=48000",
         "-shortest", "-c:v", "libx264", "-preset", "veryfast", "-crf", "19",
         "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", str(path)
     ])
