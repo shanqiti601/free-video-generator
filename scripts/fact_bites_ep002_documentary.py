@@ -138,12 +138,11 @@ async def narration():
     print("SUBTITLE_FILE="+str(srt.resolve())+" SIZE="+str(srt.stat().st_size),flush=True)
     return p,srt
 def make_segment(src,start,dur,out,label):
-    # Fit the source to a cinematic 1080p frame without stretching; restrained label.
+    # Clean cinematic frame: no chapter bars or labels over source footage.
     vf=("scale=1920:1080:force_original_aspect_ratio=increase,"
-        "crop=1920:1080,setsar=1,fps=30,format=yuv420p,"
-        "drawbox=x=0:y=0:w=iw:h=150:color=black@0.28:t=fill,"
-        f"drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='{label}':"
-        "fontcolor=white:fontsize=44:x=90:y=55")
+        "crop=1920:1080,setsar=1,fps=30,format=yuv420p")
+    if label == "FACT BITES":
+        vf += ",drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:text='FACT BITES':fontcolor=white:fontsize=42:x=80:y=70:shadowcolor=black@0.45:shadowx=2:shadowy=2"
     run(["ffmpeg","-y","-ss",str(start),"-i",str(src),"-t",str(dur),"-an","-vf",vf,
          "-c:v","libx264","-preset","veryfast","-crf","19","-pix_fmt","yuv420p",str(out)])
 def main():
@@ -175,7 +174,7 @@ def main():
     final=pathlib.Path("output/Fact-Bites-EP002-The-Ancient-Forests-of-the-Deep.mp4")
     final.parent.mkdir(exist_ok=True)
     dur=probe_duration(silent)
-    subtitle_filter="subtitles="+str(captions.resolve())+":force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=58'"
+    subtitle_filter="subtitles="+str(captions.resolve())+":force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=8,MarginV=62'"
     run(["ffmpeg","-y","-i",silent,"-i",voice,"-f","lavfi","-i",
          "anoisesrc=color=pink:amplitude=0.018:sample_rate=48000",
          "-filter_complex",
