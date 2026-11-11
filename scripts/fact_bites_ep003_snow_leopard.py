@@ -39,26 +39,25 @@ def fetch_images():
     def api(params):
         url="https://commons.wikimedia.org/w/api.php?"+urllib.parse.urlencode(params)
         req=urllib.request.Request(url,headers=headers)
-        return json.loads(urllib.request.urlopen(req,timeout=45).read())
+        return json.loads(urllib.request.urlopen(req,timeout=60).read())
     search=api({"action":"query","list":"search","srsearch":"snow leopard","srnamespace":6,"srlimit":50,"format":"json"})
     titles=[x["title"] for x in search.get("query",{}).get("search",[])]
+    if not titles: raise RuntimeError("Wikimedia Commons returned no snow leopard file results")
+    data=api({"action":"query","titles":"|".join(titles),"prop":"imageinfo","iiprop":"url|extmetadata","iiurlwidth":1920,"format":"json"})
     chosen=[]
-    for title in titles:
-        data=api({"action":"query","titles":title,"prop":"imageinfo","iiprop":"url|extmetadata","iiurlwidth":1920,"format":"json"})
-        pages=list(data.get("query",{}).get("pages",{}).values())
-        if not pages: continue
-        info=(pages[0].get("imageinfo") or [{}])[0]
+    for p in data.get("query",{}).get("pages",{}).values():
+        info=(p.get("imageinfo") or [{}])[0]
         mime=info.get("mime","")
         if mime not in ("image/jpeg","image/png","image/webp"): continue
         meta=info.get("extmetadata",{})
         license_name=html.unescape(meta.get("LicenseShortName",{}).get("value",""))
-        chosen.append({"title":title,"url":info.get("thumburl") or info.get("url"),"license":license_name,
+        chosen.append({"title":p.get("title",""),"url":info.get("thumburl") or info.get("url"),"license":license_name,
           "artist":re.sub("<[^>]+>","",html.unescape(meta.get("Artist",{}).get("value","Unknown"))),
           "credit":re.sub("<[^>]+>","",html.unescape(meta.get("Credit",{}).get("value",""))),
           "source":info.get("descriptionurl","")})
         if len(chosen)>=18: break
     if len(chosen)<8:
-        raise RuntimeError(f"Only {len(chosen)} usable Commons images found; titles={len(titles)}")
+        raise RuntimeError(f"Only {len(chosen)} usable Commons images found; file search returned {len(titles)} titles")
     (OUT/"image-credits.json").write_text(json.dumps(chosen,indent=2),encoding="utf-8")
     paths=[]
     for i,item in enumerate(chosen):
