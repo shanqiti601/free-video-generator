@@ -148,18 +148,17 @@ def main():
     download()
     # Source ranges are intentionally conservative; avoid opening title cards on A04/A05.
     plan=[
-      ("C02",12,34,"A FOREST WITHOUT TREES"),
+      ("C04",12,34,"A FOREST WITHOUT TREES"),
       ("C01",8,34,"A WORLD BUILT BY POLYPS"),
-      ("C03",10,34,"ARCHITECTS OF THE DEEP"),
-      ("C04",12,34,"ANCIENT CORAL GARDENS"),
-      ("C05",8,34,"REEFS ACROSS THE SEAFLOOR"),
-      ("C07",10,32,"LIFE AMONG THE BRANCHES"),
-      ("C03",45,34,"A SLOW-GROWING WORLD"),
-      ("C06",12,34,"DISCOVERING HIDDEN REEFS"),
-      ("C02",70,34,"FRAGILE LIVING STRUCTURES"),
-      ("C02",160,26,"FACT BITES")
-    ]
-    concat=[]
+      ("C07",10,34,"ARCHITECTS OF THE DEEP"),
+      ("C04",48,34,"ANCIENT CORAL GARDENS"),
+      ("C01",42,34,"REEFS ACROSS THE SEAFLOOR"),
+      ("C07",45,32,"LIFE AMONG THE BRANCHES"),
+      ("C04",12,34,"A SLOW-GROWING WORLD"),
+      ("C01",8,34,"DISCOVERING HIDDEN REEFS"),
+      ("C07",10,34,"FRAGILE LIVING STRUCTURES"),
+      ("C04",48,26,"FACT BITES")
+    ]    concat=[]
     for i,(key,start,dur,label) in enumerate(plan):
         src=ASSETS/(key+".mp4")
         if start+dur>probe_duration(src): raise RuntimeError(f"Invalid range {key} {start}+{dur}")
@@ -173,7 +172,7 @@ def main():
     final=pathlib.Path("output/Fact-Bites-EP002-The-Ancient-Forests-of-the-Deep.mp4")
     final.parent.mkdir(exist_ok=True)
     dur=probe_duration(silent)
-    subtitle_filter="subtitles="+str(captions.resolve())+":force_style='FontName=DejaVu Sans,FontSize=22,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=105'"
+    subtitle_filter="subtitles="+str(captions.resolve())+":force_style='FontName=DejaVu Sans,FontSize=16,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=65'"
     run(["ffmpeg","-y","-i",silent,"-i",voice,"-f","lavfi","-i",
          "anoisesrc=color=pink:amplitude=0.018:sample_rate=48000",
          "-filter_complex",
@@ -193,15 +192,7 @@ def main():
     reels=[("01-The-Forest-Hook",0,40),("02-Life-In-The-Branches",105,40),("03-Protect-The-Ancient-Gardens",245,40)]
     for name,start,duration in reels:
         out=social/(name+".mp4")
-        vf=("[0:v]split=2[bg][fg];"
-            "[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,"
-            "boxblur=24:8,eq=brightness=-0.16:saturation=0.8[blur];"
-            "[fg]scale=1080:608:force_original_aspect_ratio=decrease:flags=lanczos,"
-            "pad=1080:608:(ow-iw)/2:(oh-ih)/2:black[main];"
-            "[blur][main]overlay=0:(H-h)/2,"
-            "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf:"
-            "text='FACT BITES':fontcolor=white:fontsize=42:x=(w-text_w)/2:y=95:"
-            "shadowcolor=black@0.6:shadowx=2:shadowy=2,format=yuv420p[v]")
+        vf=("[0:v]crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920:flags=lanczos,eq=brightness=0.02:saturation=1.05,format=yuv420p[v]")
         run(["ffmpeg","-y","-ss",str(start),"-i",str(final),"-t",str(duration),
              "-filter_complex",vf,"-map","[v]","-map","0:a:0?",
              "-c:v","libx264","-preset","veryfast","-crf","20","-pix_fmt","yuv420p",
