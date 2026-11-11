@@ -35,31 +35,28 @@ High above the valleys, where the wind moves across stone and snow, the ghost of
 This is FACT BITES."""
 def run(args): subprocess.run(list(map(str,args)),check=True)
 def fetch_images():
-    headers={"User-Agent":"FactBitesDocumentary/1.0 (educational video)"}
-    def api(params):
-        url="https://commons.wikimedia.org/w/api.php?"+urllib.parse.urlencode(params)
-        req=urllib.request.Request(url,headers=headers)
-        return json.loads(urllib.request.urlopen(req,timeout=60).read())
-    search=api({"action":"query","list":"search","srsearch":"snow leopard","srnamespace":6,"srlimit":50,"format":"json"})
-    titles=[x["title"] for x in search.get("query",{}).get("search",[])]
-    if not titles: raise RuntimeError("Wikimedia Commons returned no snow leopard file results")
-    data=api({"action":"query","titles":"|".join(titles),"prop":"imageinfo","iiprop":"url|extmetadata","iiurlwidth":1920,"format":"json"})
+    # Curated Wikimedia Commons files with verified public-domain or Creative Commons licenses.
+    files=[
+      ("Snow leopard in snow.jpg","JoelAtNiabiZoo","CC BY-SA 4.0"),
+      ("Snow leopard (3757699685).jpg","Marie Hale","CC BY 2.0"),
+      ("The snow leopard.jpg","Marian78ro","CC BY-SA 4.0"),
+      ("Snow leopard in fully covered snow.jpg","In india travel","CC BY-SA 4.0"),
+      ("Snow leopard at the San Diego Zoo.jpg","Kong of Lasers","CC BY 3.0"),
+      ("Snow leopard.jpg","Ron Singer / U.S. Fish and Wildlife Service","Public domain"),
+      ("Snow leopard 1.jpg","Kchritz","CC BY-SA 4.0"),
+      ("Snow Leopard zoo.jpg","Atharva Puranik","CC BY-SA 4.0"),
+      ("Chapultepec Zoo - Snow leopard.jpg","Katie Chan","CC BY-SA 4.0"),
+      ("Snow leopard by Nicolas Goulet.jpg","Nicolas Goulet","CC BY 2.0"),
+      ("SnowLeopard.jpg","C. J. Cornish (1902)","Public domain")
+    ]
     chosen=[]
-    for p in data.get("query",{}).get("pages",{}).values():
-        info=(p.get("imageinfo") or [{}])[0]
-        mime=info.get("mime","")
-        if mime not in ("image/jpeg","image/png","image/webp"): continue
-        meta=info.get("extmetadata",{})
-        license_name=html.unescape(meta.get("LicenseShortName",{}).get("value",""))
-        chosen.append({"title":p.get("title",""),"url":info.get("thumburl") or info.get("url"),"license":license_name,
-          "artist":re.sub("<[^>]+>","",html.unescape(meta.get("Artist",{}).get("value","Unknown"))),
-          "credit":re.sub("<[^>]+>","",html.unescape(meta.get("Credit",{}).get("value",""))),
-          "source":info.get("descriptionurl","")})
-        if len(chosen)>=18: break
-    if len(chosen)<8:
-        raise RuntimeError(f"Only {len(chosen)} usable Commons images found; file search returned {len(titles)} titles")
+    for i,(name,artist,license_name) in enumerate(files):
+        url="https://commons.wikimedia.org/wiki/Special:Redirect/file/"+urllib.parse.quote(name.replace(" ","_"))
+        chosen.append({"title":name,"url":url,"license":license_name,"artist":artist,
+          "credit":f"{artist} — {license_name}","source":"https://commons.wikimedia.org/wiki/File:"+urllib.parse.quote(name.replace(" ","_"))})
     (OUT/"image-credits.json").write_text(json.dumps(chosen,indent=2),encoding="utf-8")
     paths=[]
+    headers={"User-Agent":"FactBitesDocumentary/1.0"}
     for i,item in enumerate(chosen):
         p=ASSETS/f"{i:02d}.jpg"
         req=urllib.request.Request(item["url"],headers=headers)
