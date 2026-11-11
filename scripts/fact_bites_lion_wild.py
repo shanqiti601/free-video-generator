@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """FACT BITES — wild African lion documentary. Commons footage, Edge TTS, Whisper captions, FFmpeg."""
-import asyncio, hashlib, json, pathlib, subprocess, urllib.parse, urllib.request
+import asyncio, hashlib, json, pathlib, subprocess, time, urllib.error, urllib.parse, urllib.request
 import edge_tts
 
 ROOT = pathlib.Path("output/lion")
@@ -55,6 +55,28 @@ def probe(path):
         text=True
     ))
 
+def open_with_retries(req, timeout=180, attempts=6):
+    last_error = None
+    for attempt in range(attempts):
+        try:
+            return urllib.request.urlopen(req, timeout=timeout)
+        except urllib.error.HTTPError as exc:
+            last_error = exc
+            if exc.code not in (429, 500, 502, 503, 504) or attempt == attempts - 1:
+                raise
+            retry_after = exc.headers.get("Retry-After")
+            delay = int(retry_after) if retry_after and retry_after.isdigit() else min(90, 15 * (2 ** attempt))
+            print(f"Temporary source response HTTP {exc.code}; retrying in {delay}s", flush=True)
+            time.sleep(delay)
+        except (urllib.error.URLError, TimeoutError) as exc:
+            last_error = exc
+            if attempt == attempts - 1:
+                raise
+            delay = min(90, 10 * (2 ** attempt))
+            print(f"Temporary source network error; retrying in {delay}s", flush=True)
+            time.sleep(delay)
+    raise last_error
+
 def download_commons(item, index):
     params = urllib.parse.urlencode({
         "action": "query", "titles": item["title"], "prop": "imageinfo",
@@ -64,7 +86,7 @@ def download_commons(item, index):
         "https://commons.wikimedia.org/w/api.php?" + params,
         headers={"User-Agent": "FactBitesDocumentary/1.0 (wildlife educational video)"}
     )
-    with urllib.request.urlopen(req, timeout=45) as response:
+    with open_with_retries(req, timeout=45) as response:
         data = json.load(response)
     pages = data["query"]["pages"]
     page = next(iter(pages.values()))
@@ -77,7 +99,7 @@ def download_commons(item, index):
     req = urllib.request.Request(
         info["url"], headers={"User-Agent": "Mozilla/5.0 FactBitesDocumentary/1.0"}
     )
-    with urllib.request.urlopen(req, timeout=180) as response, target.open("wb") as out:
+    with open_with_retries(req, timeout=180) as response, target.open("wb") as out:
         while True:
             chunk = response.read(1024 * 1024)
             if not chunk:
