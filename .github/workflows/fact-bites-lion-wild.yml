@@ -1,0 +1,90 @@
+name: FACT BITES — Wild Lion Documentary
+
+on:
+  push:
+    paths:
+      - 'scripts/fact_bites_lion_wild.py'
+      - '.github/workflows/fact-bites-lion-wild.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fact-bites-lion-wild
+  cancel-in-progress: false
+
+jobs:
+  render-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install FFmpeg and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install free narration and caption engines
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install edge-tts openai-whisper
+
+      - name: Render original wild-lion documentary
+        run: python scripts/fact_bites_lion_wild.py
+
+      - name: Verify both final exports
+        run: |
+          set -euo pipefail
+          ffmpeg -v error -i output/FACT-BITES-LION-Wild-Savanna-Documentary.mp4 -f null -
+          ffmpeg -v error -i output/social/FACT-BITES-LION-Instagram-Reel.mp4 -f null -
+          python - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('output/lion/FINAL-QA-FFPROBE.json')
+          d=json.loads(p.read_text())
+          assert d['unique_source_count'] == 3
+          assert d['source_sha256_unique'] is True
+          assert d['caption_file_bytes'] > 100
+          for key, expected in [('horizontal',(1920,1080)),('vertical',(1080,1920))]:
+              streams=d[key]['streams']
+              v=next(s for s in streams if s.get('codec_type')=='video')
+              assert (v['width'],v['height']) == expected
+              assert any(s.get('codec_type')=='audio' for s in streams)
+              assert 60 < float(d[key]['format']['duration']) < 180
+          print('FINAL_QA=PASS')
+          PY
+
+      - name: Publish public release assets for social delivery
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="fact-bites-lion-$(date -u +%Y%m%d)-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" \
+            output/FACT-BITES-LION-Wild-Savanna-Documentary.mp4 \
+            output/social/FACT-BITES-LION-Instagram-Reel.mp4 \
+            output/lion/video-credits.json \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "FACT BITES — The Lion: Power of the Pride" \
+            --notes "Wildlife documentary using three distinct, verified Kruger National Park lion clips. Voiceover and speech-aligned captions included. Footage attribution and CC BY-SA 2.0 license details are included in video-credits.json."
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FACT-BITES-LION-FINAL-EXPORTS
+          path: |
+            output/FACT-BITES-LION-Wild-Savanna-Documentary.mp4
+            output/social/FACT-BITES-LION-Instagram-Reel.mp4
+            output/lion/narration.mp3
+            output/lion/captions.srt
+            output/lion/video-credits.json
+            output/lion/FINAL-QA-FFPROBE.json
+            output/lion/Research-Sources.txt
+          if-no-files-found: error
+          retention-days: 7
