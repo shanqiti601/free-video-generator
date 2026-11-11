@@ -40,44 +40,31 @@ def centered(draw, text, y, f, fill, maxw=650):
 def oval(draw, box, fill, outline=(38,25,20), width=2):
     draw.ellipse(box, fill=fill, outline=outline, width=width)
 
-def ant(draw, x, y, scale=1, color=(55,31,25), legs=True, queen=False):
-    # Anatomically legible ant: head, narrow petiole, large gaster, six legs on thorax.
-    dark = tuple(max(0,c-18) for c in color)
-    thorax=(x-7*scale,y-7*scale)
+def shiny(draw,box,base,edge):
+    draw.ellipse(box,fill=base,outline=edge,width=2)
+    x1,y1,x2,y2=box
+    draw.ellipse((x1+(x2-x1)*.16,y1+(y2-y1)*.10,x1+(x2-x1)*.60,y1+(y2-y1)*.34),fill=tuple(min(255,int(c*1.4+20)) for c in base))
+def ant(draw,x,y,scale=1,color=(55,31,25),legs=True,queen=False):
+    dark=tuple(max(0,c-28) for c in color)
     if legs:
-        # Three pairs of jointed legs attached to the thorax.
+        pairs=[((-8,-4),(-25,-27),(-45,-9)),((-5,2),(-10,26),(8,48)),((2,4),(25,19),(45,38))]
         for side in (-1,1):
-            for i, (ax, knee, foot) in enumerate([
-                (-2, ( -23, -22), (-42, -4)),
-                ( 0, ( -4,  27), ( 15, 48)),
-                ( 5, ( 25,  15), ( 43, 39))
-            ]):
-                sx=x+ax*scale
-                kx=x+knee[0]*scale
-                ky=y+knee[1]*scale*side
-                fx=x+foot[0]*scale
-                fy=y+foot[1]*scale*side
-                draw.line((sx,y, kx,ky, fx,fy), fill=dark, width=max(3,int(5*scale)), joint="curve")
-                oval(draw,(kx-3*scale,ky-3*scale,kx+3*scale,ky+3*scale),dark,dark,1)
-    # abdomen / gaster, petiole, thorax, head
-    oval(draw,(x-68*scale,y-21*scale,x-18*scale,y+25*scale),color,dark,max(1,int(2*scale)))
-    oval(draw,(x-20*scale,y-7*scale,x-8*scale,y+7*scale),dark,dark,1)
-    oval(draw,(x-13*scale,y-15*scale,x+17*scale,y+15*scale),color,dark,max(1,int(2*scale)))
-    oval(draw,(x+12*scale,y-24*scale,x+58*scale,y+22*scale),color,dark,max(1,int(2*scale)))
-    # eye and mandibles
-    oval(draw,(x+42*scale,y-12*scale,x+48*scale,y-6*scale),(245,194,102),(25,18,15),1)
-    draw.arc((x+48*scale,y+3*scale,x+65*scale,y+19*scale),190,290,fill=dark,width=max(2,int(3*scale)))
-    # two segmented antennae
-    draw.line((x+40*scale,y-19*scale,x+48*scale,y-43*scale,x+62*scale,y-48*scale),fill=dark,width=max(2,int(3*scale)),joint="curve")
-    draw.line((x+29*scale,y-21*scale,x+30*scale,y-45*scale,x+40*scale,y-55*scale),fill=dark,width=max(2,int(3*scale)),joint="curve")
-    if queen:
-        # subtle thorax enlargement and wing scars, not a fantasy crown
-        draw.arc((x-25*scale,y-22*scale,x+18*scale,y+22*scale),190,350,fill=(205,147,89),width=max(2,int(3*scale)))
+            for st,kn,ft in pairs:
+                a=(x+st[0]*scale,y+st[1]*scale*side); b=(x+kn[0]*scale,y+kn[1]*scale*side); c=(x+ft[0]*scale,y+ft[1]*scale*side)
+                draw.line((a,b,c),fill=dark,width=max(3,int(5*scale)),joint="curve")
+                draw.ellipse((b[0]-3*scale,b[1]-3*scale,b[0]+3*scale,b[1]+3*scale),fill=tuple(min(255,v+25) for v in color))
+    shiny(draw,(x-72*scale,y-25*scale,x-17*scale,y+27*scale),color,dark)
+    shiny(draw,(x-16*scale,y-17*scale,x+20*scale,y+17*scale),tuple(min(255,c+8) for c in color),dark)
+    shiny(draw,(x+13*scale,y-27*scale,x+62*scale,y+23*scale),tuple(min(255,c+5) for c in color),dark)
+    draw.ellipse((x+45*scale,y-12*scale,x+52*scale,y-5*scale),fill=(245,193,111))
+    draw.line((x+39*scale,y-22*scale,x+48*scale,y-45*scale,x+65*scale,y-50*scale),fill=dark,width=max(2,int(3*scale)),joint="curve")
+    draw.line((x+29*scale,y-23*scale,x+29*scale,y-47*scale,x+39*scale,y-57*scale),fill=dark,width=max(2,int(3*scale)),joint="curve")
+    if queen: draw.arc((x-29*scale,y-25*scale,x+23*scale,y+25*scale),190,350,fill=(222,166,103),width=max(2,int(4*scale)))
 
 def egg(draw,x,y,scale=1):
-    # Ant eggs are tiny, pale, rice-grain shaped, not round bird eggs.
-    draw.ellipse((x-13*scale,y-6*scale,x+13*scale,y+6*scale),fill=(250,239,207),outline=(190,164,124),width=max(1,int(2*scale)))
-    draw.arc((x-8*scale,y-4*scale,x+8*scale,y+4*scale),190,340,fill=(255,252,231),width=1)
+    # Pearly white, rice-grain shaped egg with a bright highlight.
+    shiny(draw,(x-17*scale,y-8*scale,x+17*scale,y+8*scale),(244,235,207),(174,151,119))
+    draw.arc((x-12*scale,y-6*scale,x+7*scale,y+3*scale),190,310,fill=(255,255,245),width=2)
 
 def larva(draw,x,y,scale=1):
     # Curled, legless grub with clear body segments and a small head.
@@ -102,52 +89,28 @@ def pupa(draw,x,y,scale=1,cocoon=True):
         draw.ellipse((x-19*scale,y-37*scale,x+19*scale,y+37*scale),fill=(232,211,169),outline=(155,124,88),width=2)
         draw.line((x-10*scale,y-15*scale,x+10*scale,y+15*scale),fill=(183,148,106),width=2)
 
-def soil_background(im, d):
-    # Bright educational cutaway: lively surface above a richly detailed underground nest.
-    d.rectangle((0,0,W,405),fill=(105,190,224))
-    d.ellipse((535,55,635,155),fill=(255,220,93),outline=(255,244,180),width=5)
-    # soft clouds
+def soil_background(im,d):
+    d.rectangle((0,0,W,405),fill=(105,190,224)); d.ellipse((535,55,635,155),fill=(255,220,93))
     for x,y in [(90,105),(350,175),(600,235)]:
-        d.ellipse((x,y,x+85,y+38),fill=(239,250,250))
-        d.ellipse((x+20,y-18,x+65,y+35),fill=(239,250,250))
-    # green meadow and layered soil
-    d.rectangle((0,350,W,410),fill=(83,157,77))
-    d.rectangle((0,410,W,H),fill=(160,111,66))
-    d.rectangle((0,410,W,470),fill=(119,83,53))
-    for yy in range(470,H,92):
-        d.line((0,yy,W,yy+random.randint(-7,7)),fill=(185,137,83),width=3)
-    # soil speckles and stones
-    for _ in range(440):
-        x=random.randrange(W); y=random.randrange(465,H)
-        r=random.choice((1,2,2,3,4))
-        col=random.choice(((205,157,99),(111,74,47),(132,91,56),(224,174,111)))
-        d.ellipse((x-r,y-r,x+r,y+r),fill=col)
-    for x,y,r in [(65,570,13),(620,690,18),(95,1030,16),(580,1120,12),(470,520,9)]:
-        d.ellipse((x-r,y-r,x+r,y+r),fill=(104,91,77),outline=(75,65,55),width=3)
-    # grass blades, flowers and visible roots
+        d.ellipse((x,y,x+85,y+38),fill=(239,250,250)); d.ellipse((x+20,y-18,x+65,y+35),fill=(239,250,250))
+    d.rectangle((0,350,W,410),fill=(83,157,77)); d.rectangle((0,410,W,H),fill=(151,101,59)); d.rectangle((0,410,W,470),fill=(113,77,49))
+    for yy in range(470,H,86): d.line((0,yy,W,yy+4),fill=(181,132,79),width=3)
+    for _ in range(450):
+        x=random.randrange(W); y=random.randrange(465,H); r=random.choice((1,2,3))
+        d.ellipse((x-r,y-r,x+r,y+r),fill=random.choice(((205,157,99),(103,69,45),(132,91,56),(224,174,111))))
     for x in range(10,W,27):
-        d.line((x,407,x-8,378),fill=(38,119,57),width=5)
-        d.line((x,407,x+8,372),fill=(47,139,64),width=5)
-    for x in (115,245,520,660):
-        d.line((x,408,x+random.randint(-18,18),510),fill=(111,80,40),width=5)
-    for x,y in [(135,350),(555,360),(635,345)]:
-        d.line((x,y+20,x,y-10),fill=(42,112,54),width=4)
-        for dx,dy,col in [(-10,0,(255,117,145)),(10,0,(255,219,83)),(0,-9,(255,245,214))]:
-            d.ellipse((x+dx-7,y+dy-7,x+dx+7,y+dy+7),fill=col)
-    # connected tunnels with bright soil rims and dark interior
-    paths=[[(355,455),(355,545),(275,610),(275,700)],
-           [(275,700),(275,805),(365,875)],
-           [(355,545),(470,600),(470,700)]]
-    for path in paths:
-        d.line(path,fill=(213,158,94),width=78,joint="curve")
-        d.line(path,fill=(55,42,34),width=58,joint="curve")
-    # roomy nursery chamber and side room
-    d.ellipse((75,650,640,1115),fill=(207,151,88),outline=(240,190,123),width=6)
-    d.ellipse((94,670,621,1095),fill=(57,43,34),outline=(119,82,53),width=5)
-    d.ellipse((430,570,600,760),fill=(205,150,88),outline=(235,185,119),width=5)
-    d.ellipse((443,583,587,747),fill=(55,42,34),outline=(115,79,50),width=4)
-    for x in range(125,590,24):
-        d.arc((x,1010,x+35,1050),180,340,fill=(111,82,57),width=2)
+        d.line((x,407,x-8,378),fill=(38,119,57),width=5); d.line((x,407,x+8,372),fill=(47,139,64),width=5)
+    for x in (115,245,520,660): d.line((x,408,x+5,510),fill=(111,80,40),width=5)
+    # branching corridors connect distinct chambers
+    paths=[[(355,450),(355,520),(345,580)],[(345,580),(220,625),(180,710)],[(345,580),(500,620),(525,735)],[(345,580),(350,810),(355,955)]]
+    for p in paths:
+        d.line(p,fill=(213,158,94),width=76,joint="curve"); d.line(p,fill=(49,37,30),width=54,joint="curve")
+    # Separate queen room, nursery, food store and waste chamber
+    for x1,y1,x2,y2 in [(48,650,278,855),(285,790,650,1115),(425,560,665,760),(430,1060,650,1190)]:
+        d.ellipse((x1-8,y1-8,x2+8,y2+8),fill=(213,157,93),outline=(242,194,132),width=5)
+        d.ellipse((x1,y1,x2,y2),fill=(49,37,30),outline=(118,79,49),width=5)
+        d.arc((x1+5,y1+5,x2-5,y2-5),195,335,fill=(139,96,59),width=5)
+    for x in range(75,630,22): d.arc((x,1035,x+30,1070),180,340,fill=(111,82,57),width=2)
 
 def pill(draw, x, y, text, fill=(255,245,207), ink=(48,43,35), f=None):
     f = f or font(17, True)
@@ -281,7 +244,7 @@ for i, line in enumerate(NARRATION):
     end = min(duration, (i + 1) * scene_len)
     srt.extend([str(i + 1), f"{stamp(start)} --> {stamp(end)}", line, ""])
 caption_file = ASSET / "captions.srt"
-caption_file.write_text("\\n".join(srt), encoding="utf-8")
+caption_file.write_text("\n".join(srt), encoding="utf-8")
 if not caption_file.is_file() or caption_file.stat().st_size < 100:
     raise RuntimeError("Subtitle file was not created correctly")
 
