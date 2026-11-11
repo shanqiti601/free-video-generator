@@ -110,5 +110,11 @@ def main():
     assert any(x.get("codec_type")=="audio" for x in probe["streams"])
     assert duration>120, f"Video too short: {duration}"
     (OUT/"FINAL-QA-FFPROBE.json").write_text(json.dumps(probe,indent=2))
-    print("FINAL_VIDEO="+str(VIDEO)); print("DURATION_SECONDS="+str(round(duration,1))); print("IMAGE_COUNT="+str(len(images))); print("QA=PASS")
+    # One English-language vertical cut for Instagram; no translated captions.
+    social=pathlib.Path("output/social"); social.mkdir(parents=True,exist_ok=True)
+    reel=social/"FACT-BITES-EP003-Instagram-Reel.mp4"
+    run(["ffmpeg","-y","-i",VIDEO,"-t","60","-filter_complex",
+      "[0:v]split=2[bg][fg];[bg]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,boxblur=24:12[blur];[fg]scale=1080:608:force_original_aspect_ratio=decrease[main];[blur][main]overlay=(W-w)/2:(H-h)/2,format=yuv420p[v]",
+      "-map","[v]","-map","0:a:0","-c:v","libx264","-preset","veryfast","-crf","21","-c:a","aac","-b:a","160k","-movflags","+faststart",reel])
+    print("FINAL_VIDEO="+str(VIDEO)); print("INSTAGRAM_REEL="+str(reel)); print("DURATION_SECONDS="+str(round(duration,1))); print("IMAGE_COUNT="+str(len(images))); print("QA=PASS")
 if __name__=="__main__": main()
