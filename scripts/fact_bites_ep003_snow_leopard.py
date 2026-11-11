@@ -45,8 +45,7 @@ def fetch_images():
     headers={"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36"}
     for i,item in enumerate(clips):
         p=ASSETS/f"{i:02d}.mp4"
-        req=urllib.request.Request(item["url"],headers=headers)
-        with urllib.request.urlopen(req,timeout=120) as r: p.write_bytes(r.read())
+        run(["curl","-f","-L","--retry","3","--retry-delay","2","-A",headers["User-Agent"],"-o",p,item["url"]])
         if p.stat().st_size<100000: raise RuntimeError(f"Pexels clip download failed or too small: {item['source']}")
         probe=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-show_format","-of","json",p],text=True))
         if not any(s.get("codec_type")=="video" for s in probe["streams"]): raise RuntimeError(f"Invalid Pexels MP4: {item['source']}")
