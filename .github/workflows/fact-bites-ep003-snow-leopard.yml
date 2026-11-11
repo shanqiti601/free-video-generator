@@ -1,0 +1,65 @@
+name: FACT BITES EP003 — Snow Leopard Documentary
+
+on:
+  push:
+    paths:
+      - 'scripts/fact_bites_ep003_snow_leopard.py'
+      - '.github/workflows/fact-bites-ep003-snow-leopard.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fact-bites-ep003-snow-leopard
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FFmpeg and fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free narration engine
+        run: python -m pip install edge-tts
+      - name: Render original FACT BITES EP003
+        run: python scripts/fact_bites_ep003_snow_leopard.py
+      - name: Verify MP4 files
+        run: |
+          ffmpeg -v error -i output/Fact-Bites-EP003-Ghost-of-the-Mountains.mp4 -f null -
+          ffmpeg -v error -i output/social/FACT-BITES-EP003-Instagram-Reel.mp4 -f null -
+          python - <<'PY'
+          import json, pathlib, subprocess
+          files = [
+            pathlib.Path('output/Fact-Bites-EP003-Ghost-of-the-Mountains.mp4'),
+            pathlib.Path('output/social/FACT-BITES-EP003-Instagram-Reel.mp4')
+          ]
+          for p in files:
+            d=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',str(p)]))
+            assert any(s.get('codec_type')=='video' for s in d['streams'])
+            assert any(s.get('codec_type')=='audio' for s in d['streams'])
+            print(f'QA_PASS {p} duration={d["format"]["duration"]} size={p.stat().st_size}')
+          assert pathlib.Path('output/ep003/captions.srt').stat().st_size > 0
+          assert pathlib.Path('output/ep003/image-credits.json').stat().st_size > 0
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FACT-BITES-EP003-SNOW-LEOPARD
+          path: |
+            output/Fact-Bites-EP003-Ghost-of-the-Mountains.mp4
+            output/social/FACT-BITES-EP003-Instagram-Reel.mp4
+            output/ep003/narration.mp3
+            output/ep003/captions.srt
+            output/ep003/Research-Sources.txt
+            output/ep003/image-credits.json
+            output/ep003/FINAL-QA-FFPROBE.json
+          if-no-files-found: error
+          retention-days: 7
