@@ -133,11 +133,13 @@ def main():
  clips=[];each=total/len(selected)
  for i,item in enumerate(selected):
   clip=OUT/f"scene_{i+1}.mp4";vf="scale=1080:1920:force_original_aspect_ratio=increase:flags=lanczos,crop=1080:1920,setsar=1,eq=contrast=1.04:saturation=1.08,unsharp=5:5:0.35,format=yuv420p";start=max(0,(item["duration"]-each)/2)
-  run(["ffmpeg","-y","-loglevel","error","-ss",str(start),"-i",item["local"],"-t",str(each),"-vf",vf,"-an","-r","30","-c:v","libx264","-preset","fast","-crf","19","-pix_fmt","yuv420p",str(clip)]);clips.append(clip)
+  run(["ffmpeg","-y","-loglevel","error","-ss",str(start),"-stream_loop","-1","-i",item["local"],"-t",str(each),"-vf",vf,"-an","-r","30","-c:v","libx264","-preset","fast","-crf","19","-pix_fmt","yuv420p",str(clip)]);clips.append(clip)
  concat=OUT/"concat.txt";concat.write_text("".join("file '"+str(x.resolve())+"'\n" for x in clips))
  silent=OUT/"silent.mp4";run(["ffmpeg","-y","-loglevel","error","-f","concat","-safe","0","-i",str(concat),"-c","copy","-t",str(total),str(silent)])
  ass=OUT/"captions.ass";captions(narration,ass,total);final=OUT/"FACT-BITES-UNBOXED.mp4"
  run(["ffmpeg","-y","-loglevel","error","-i",str(silent),"-i",str(voice),"-vf",f"ass={ass}:fontsdir=/usr/share/fonts/truetype/dejavu","-map","0:v:0","-map","1:a:0","-c:v","libx264","-preset","fast","-crf","19","-c:a","aac","-b:a","192k","-shortest","-movflags","+faststart","-pix_fmt","yuv420p",str(final)])
+  credits="TOPIC: "+topic["title"]+"\n\n"+narration+"\n\nASSET CREDITS\n"+"\n\n".join(f"{x['title']}\nCreator: {x['creator']}\nLicense: {x['license']}\nSource: {x['page']}" for x in selected)
+  (OUT/"ASSET-CREDITS.txt").write_text(credits,encoding="utf-8")
  frames=[]
  for i in range(3):
   frame=OUT/f"qa_{i+1}.jpg";at=min(total-0.5,total*(i+0.5)/3)
