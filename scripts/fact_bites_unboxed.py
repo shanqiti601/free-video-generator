@@ -62,7 +62,7 @@ def dl(item,p):
 def stamp(t):
  n=int(t*100);h,n=divmod(n,360000);m,n=divmod(n,6000);s,n=divmod(n,100);return f"{h}:{m:02}:{s:02}.{n:02}"
 def captions(text,path,total):
- sentences=re.split(r"(?<=[.!?])\\s+",text.strip())
+ sentences=re.split(r"(?<=[.!?])\s+",text.strip())
  weights=[max(1,len(s.split())) for s in sentences]
  all_words=sum(weights);cursor=0;events=[]
  for sentence,w in zip(sentences,weights):
@@ -72,12 +72,12 @@ def captions(text,path,total):
     wrapped.append(current);current=word
    else:current=(current+" "+word).strip()
   if current:wrapped.append(current)
-  cap="\\\\N".join(wrapped)
+  cap="\\N".join(wrapped)
   span=total*w/all_words
   events.append(f"Dialogue: 0,{stamp(cursor)},{stamp(min(total,cursor+span))},Caption,,0,0,0,,{cap}")
   cursor+=span
  head=["[Script Info]","ScriptType: v4.00+","PlayResX: 1080","PlayResY: 1920","WrapStyle: 2","[V4+ Styles]","Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding","Style: Caption,DejaVu Sans,44,&H00FFFFFF,&H0000FFFF,&H00101010,&H90000000,1,0,0,0,100,100,0,0,1,3,1,2,100,100,250,1","Style: Brand,DejaVu Sans,40,&H0000D7FF,&H0000D7FF,&H00101010,&H90000000,1,0,0,0,100,100,1,0,1,2,1,8,80,80,90,1","[Events]","Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",f"Dialogue: 1,0:00:00.00,{stamp(min(2.2,total))},Brand,,0,0,0,,FACT BITES UNBOXED"]
- path.write_text("\\n".join(head+events)+"\\n",encoding="utf-8")
+ path.write_text("\n".join(head+events)+"\n",encoding="utf-8")
 
 PEXELS_MICROWAVE=[
  {"title":"A person uses a microwave oven in a domestic kitchen setting","creator":"Aghyad Najjar","description":"Person operating a microwave oven in a kitchen","url":"https://videos.pexels.com/video-files/4710717/4710717-hd_1920_1080_30fps.mp4","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/video-of-person-using-microwave-4710717/","score":12},
