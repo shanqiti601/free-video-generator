@@ -71,7 +71,7 @@ def captions(text,path,total):
  head=["[Script Info]","ScriptType: v4.00+","PlayResX: 1080","PlayResY: 1920","WrapStyle: 2","[V4+ Styles]","Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding","Style: Caption,DejaVu Sans,48,&H00FFFFFF,&H0000FFFF,&H00101010,&H90000000,1,0,0,0,100,100,0,0,1,3,1,2,100,100,250,1","Style: Brand,DejaVu Sans,40,&H0000D7FF,&H0000D7FF,&H00101010,&H90000000,1,0,0,0,100,100,1,0,1,2,1,8,80,80,90,1","[Events]","Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",f"Dialogue: 1,0:00:00.00,{stamp(min(2.2,total))},Brand,,0,0,0,,FACT BITES UNBOXED"]
  path.write_text("\n".join(head+ev)+"\n",encoding="utf-8")
 def main():
- OUT.mkdir(parents=True,exist_ok=True);topic=TOPICS[(int(os.getenv("GITHUB_RUN_NUMBER","1"))-1)%len(TOPICS)]
+ OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("FACT_BITES_TOPIC_INDEX",(int(os.getenv("GITHUB_RUN_NUMBER","1"))-1)))%len(TOPICS);topic=TOPICS[idx]
  narration=" ".join([topic["hook"]]+topic["lines"]);items=[]
  for term in topic["terms"][:2]:
   for label,fn in [("IA",ia),("COMMONS",commons)]:
