@@ -40,6 +40,7 @@ jobs:
       - name: Build one original short
         env:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
+          FACT_BITES_TOPIC_INDEX: '3'
         run: python scripts/fact_bites_unboxed.py
       - name: Upload render and QA material
         if: always()
