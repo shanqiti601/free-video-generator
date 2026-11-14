@@ -107,7 +107,7 @@ PEXELS_BY_TOPIC={
  ]
 }
 def main():
- OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("FACT_BITES_TOPIC_INDEX",str(int(os.getenv("GITHUB_RUN_NUMBER","1"))%len(TOPICS)))%len(TOPICS);topic=TOPICS[idx]
+ OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("FACT_BITES_TOPIC_INDEX",str(int(os.getenv("GITHUB_RUN_NUMBER","1"))%len(TOPICS))))%len(TOPICS);topic=TOPICS[idx]
  narration=" ".join([topic["hook"]]+topic["lines"]);items=[]
  if topic["title"]=="Why microwave food heats unevenly":items.extend(PEXELS_MICROWAVE)
  if topic["title"] in PEXELS_BY_TOPIC:items.extend(PEXELS_BY_TOPIC[topic["title"]])
