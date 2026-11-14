@@ -23,10 +23,11 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Install FFmpeg and fonts
+      - name: Verify runner media tools
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg fonts-dejavu-core
+          ffmpeg -version
+          ffprobe -version
+          fc-match 'DejaVu Sans'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -36,7 +37,7 @@ jobs:
         env:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: python scripts/fact_bites_unboxed.py
-      - name: Upload render and credits
+      - name: Upload render and QA material
         if: always()
         uses: actions/upload-artifact@v4
         with:
