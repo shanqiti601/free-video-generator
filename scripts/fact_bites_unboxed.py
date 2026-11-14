@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """FACT BITES UNBOXED: conservative, license-checked video assembly."""
-import asyncio, html, json, os, re, subprocess, sys, urllib.parse, urllib.request
+import asyncio, json, os, re, subprocess, sys, urllib.parse, urllib.request
 from pathlib import Path
 OUT=Path("output/unboxed"); UA="FACT-BITES-UNBOXED/1.1 educational video"
 TOPICS=[
@@ -50,41 +50,12 @@ def commons(term):
   title=p.get("title","")
   out.append({"title":title,"creator":val("Artist"),"description":val("ImageDescription")[:1000],"url":u,"license":lic,"page":"https://commons.wikimedia.org/wiki/"+urllib.parse.quote(title.replace(" ","_")),"score":1})
  return out
-def pexels(term):
- search_url="https://www.pexels.com/search/videos/?q="+urllib.parse.quote(term)
- headers={"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36","Accept-Language":"en-US,en;q=0.9"}
- req=urllib.request.Request(search_url,headers=headers)
- with urllib.request.urlopen(req,timeout=35) as response:search_html=response.read().decode("utf-8","ignore")
- ids=list(dict.fromkeys(re.findall(r"/download/video/(\d+)/",search_html)))[:8]
- out=[]
- for vid in ids:
-  page_match=re.search(r'href=["\']([^"\']*/video/[^"\']*-'+re.escape(vid)+r'/?)["\']',search_html)
-  page_url=urllib.parse.urljoin("https://www.pexels.com",page_match.group(1)) if page_match else ""
-  if not page_url:continue
-  try:
-   preq=urllib.request.Request(page_url,headers=headers)
-   with urllib.request.urlopen(preq,timeout=25) as pr:page=pr.read().decode("utf-8","ignore")
-   if "Free to use" not in page and "Free download" not in page:continue
-   title_match=re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)',page)
-   desc_match=re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)',page)
-   title=html.unescape(title_match.group(1)) if title_match else term
-   desc=html.unescape(desc_match.group(1)) if desc_match else ""
-   creator_match=re.search(r'"photographerName"\s*:\s*"([^"]+)"',page)
-   creator=html.unescape(creator_match.group(1)) if creator_match else "Pexels contributor"
-   dreq=urllib.request.Request(f"https://www.pexels.com/download/video/{vid}/",headers={**headers,"Referer":page_url})
-   with urllib.request.urlopen(dreq,timeout=35) as dr:direct=dr.geturl()
-   tokens=[w for w in re.findall(r"[a-z0-9]+",term.lower()) if len(w)>2]
-   corpus=(title+" "+desc).lower()
-   score=sum(2 if w in title.lower() else 1 for w in tokens if w in corpus)
-   if score<1 or not direct.lower().endswith(".mp4"):continue
-   out.append({"title":title,"creator":creator,"description":desc[:1000],"url":direct,"license":"Pexels License — free commercial use","page":page_url,"score":score})
-  except Exception as e:print("PEXELS_ASSET_WARNING",vid,str(e)[:120])
- return sorted(out,key=lambda x:x["score"],reverse=True)
-
 def run(c):subprocess.run(c,check=True)
 def dur(p):return float(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",str(p)],text=True).strip())
 def dl(item,p):
- req=urllib.request.Request(item["url"],headers={"User-Agent":UA})
+ headers={"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36"}
+ if item.get("page"):headers["Referer"]=item["page"]
+ req=urllib.request.Request(item["url"],headers=headers)
  with urllib.request.urlopen(req,timeout=120) as r,open(p,"wb") as f:
   while b:=r.read(1024*1024):f.write(b)
  if p.stat().st_size<100000:raise RuntimeError("video file too small")
@@ -117,15 +88,30 @@ PEXELS_MICROWAVE=[
  {"title":"Microwave in a kitchen with timer running, showing 4 seconds","creator":"Aghyad Najjar","description":"Close-up microwave timer and oven in use","url":"https://videos.pexels.com/video-files/4710526/4710526-hd_1920_1080_30fps.mp4","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/video-of-person-heating-up-a-bread-on-a-microwave-4710526/","score":11},
  {"title":"Microwave oven in a kitchen setup, ideal for home cooking scenes","creator":"Aghyad Najjar","description":"Microwave oven and food heating in a kitchen","url":"https://videos.pexels.com/video-files/4710520/4710520-hd_1920_1080_30fps.mp4","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/video-of-person-putting-bread-on-a-microwave-4710520/","score":10}
 ]
+PEXELS_BY_TOPIC={
+ "Why a zipper stays closed":[
+  {"title":"Close-up of an adult male zipping up a sporty blue jacket","creator":"Rustem Muratov","url":"https://www.pexels.com/download/video/27095041/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/a-man-in-a-blue-shirt-is-adjusting-his-shirt-27095041/","score":12},
+  {"title":"Close-up of a man zipping up a hoodie","creator":"cottonbro studio","url":"https://www.pexels.com/download/video/7026840/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/close-up-view-of-a-man-wearing-a-jacket-7026840/","score":11}
+ ],
+ "How a ballpoint pen controls ink":[
+  {"title":"Close up of a Person Writing on Paper with a ballpoint pen","creator":"Mikhail Nilov","url":"https://www.pexels.com/download/video/8872969/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/close-up-of-a-person-writing-on-paper-8872969/","score":12},
+  {"title":"A woman writes in a notebook with a ballpoint pen","creator":"Kaboompics","url":"https://www.pexels.com/download/video/4972558/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/close-up-view-of-a-woman-writing-on-a-notebook-4972558/","score":11}
+ ],
+ "Why a tape measure blade curves":[
+  {"title":"A close-up shot of a hand holding a pink measuring tape","creator":"SHVETS production","url":"https://www.pexels.com/download/video/6967536/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/person-holding-a-tape-measure-6967536/","score":12},
+  {"title":"A tailor measuring a suit on a mannequin with a tape measure","creator":"Tima Miroshnichenko","url":"https://www.pexels.com/download/video/6765481/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/an-elderly-man-checking-the-size-of-the-suit-using-tape-measure-6765481/","score":11}
+ ],
+ "How a pop-up toaster stops":[
+  {"title":"Detailed view of a slice of bread being toasted in a toaster","creator":"8K Lover of aerials","url":"https://www.pexels.com/download/video/4061847/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/inside-the-bread-toaster-4061847/","score":12},
+  {"title":"Watch as slices of bread pop up from a sleek toaster","creator":"ArtHouse Studio","url":"https://www.pexels.com/download/video/4571347/","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/close-up-of-bread-popping-out-of-a-toaster-4571347/","score":11}
+ ]
+}
 def main():
- OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("GITHUB_RUN_NUMBER","1"))%len(TOPICS);topic=TOPICS[idx]
+ OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("FACT_BITES_TOPIC_INDEX",str(int(os.getenv("GITHUB_RUN_NUMBER","1"))%len(TOPICS)))%len(TOPICS);topic=TOPICS[idx]
  narration=" ".join([topic["hook"]]+topic["lines"]);items=[]
- if topic["title"]=="Why microwave food heats unevenly":items.extend(PEXELS_MICROWAVE);print("PEXELS_CURATED_ASSETS="+str(len(PEXELS_MICROWAVE)))
- if not items:
-  for term in topic["terms"][:2]:
-   try:
-    got=pexels(term);print("PEXELS",term,"=",len(got));items.extend(got[:6])
-   except Exception as e:print("PEXELS_SEARCH_WARNING",term,str(e)[:160])
+ if topic["title"]=="Why microwave food heats unevenly":items.extend(PEXELS_MICROWAVE)
+ if topic["title"] in PEXELS_BY_TOPIC:items.extend(PEXELS_BY_TOPIC[topic["title"]])
+ print("CURATED_PEXELS_ASSETS="+str(len(items)))
  for term in ([] if items else topic["terms"][:2]):
   for label,fn in [("IA",ia),("COMMONS",commons)]:
    try:
@@ -136,7 +122,7 @@ def main():
  for item in candidates:
   if len(selected)>=3:break
   try:
-   p=OUT / (f"source_{len(selected)+1}"+Path(urllib.parse.urlparse(item["url"]).path).suffix)
+   p=OUT / (f"source_{len(selected)+1}"+(Path(urllib.parse.urlparse(item["url"]).path).suffix or ".mp4"))
    dl(item,p);d=dur(p)
    if d<8:continue
    item.update(local=str(p),duration=d);selected.append(item)
