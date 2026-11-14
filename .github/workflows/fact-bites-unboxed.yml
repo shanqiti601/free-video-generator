@@ -11,7 +11,7 @@ on:
       - '.github/workflows/fact-bites-unboxed.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: fact-bites-unboxed-production-v2
@@ -41,6 +41,18 @@ jobs:
         env:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: python scripts/fact_bites_unboxed.py
+      - name: Persist recent topic history
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add fact_bites_topic_history.json
+          if git diff --cached --quiet; then
+            echo 'Topic history unchanged'
+          else
+            git commit -m 'Update Fact Bites topic history'
+            git push
+          fi
       - name: Upload render and QA material
         if: always()
         uses: actions/upload-artifact@v4
