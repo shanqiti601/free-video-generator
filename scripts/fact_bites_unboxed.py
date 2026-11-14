@@ -60,16 +60,27 @@ def dl(item,p):
 def stamp(t):
  n=int(t*100);h,n=divmod(n,360000);m,n=divmod(n,6000);s,n=divmod(n,100);return f"{h}:{m:02}:{s:02}.{n:02}"
 def captions(text,path,total):
- sentences=re.split(r"(?<=[.!?])\s+",text.strip());weights=[max(1,len(s.split())) for s in sentences];den=sum(weights);t=0;ev=[]
- for s,w in zip(sentences,weights):
-  span=total*w/den;lines=[];cur=""
-  for word in s.split():
-   if len(cur)+len(word)+1>32:lines.append(cur);cur=word
-   else:cur=(cur+" "+word).strip()
-  if cur:lines.append(cur)
-  cap="\\N".join(lines[:2]);ev.append(f"Dialogue: 0,{stamp(t)},{stamp(min(total,t+span))},Caption,,0,0,0,,{cap}");t+=span
- head=["[Script Info]","ScriptType: v4.00+","PlayResX: 1080","PlayResY: 1920","WrapStyle: 2","[V4+ Styles]","Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding","Style: Caption,DejaVu Sans,48,&H00FFFFFF,&H0000FFFF,&H00101010,&H90000000,1,0,0,0,100,100,0,0,1,3,1,2,100,100,250,1","Style: Brand,DejaVu Sans,40,&H0000D7FF,&H0000D7FF,&H00101010,&H90000000,1,0,0,0,100,100,1,0,1,2,1,8,80,80,90,1","[Events]","Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",f"Dialogue: 1,0:00:00.00,{stamp(min(2.2,total))},Brand,,0,0,0,,FACT BITES UNBOXED"]
- path.write_text("\n".join(head+ev)+"\n",encoding="utf-8")
+ sentences=re.split(r"(?<=[.!?])\s+",text.strip())
+ weights=[max(1,len(s.split())) for s in sentences]
+ all_words=sum(weights);cursor=0;events=[]
+ for sentence,w in zip(sentences,weights):
+  wrapped=[];current=""
+  for word in sentence.split():
+   if current and len(current)+1+len(word)>38:
+    wrapped.append(current);current=word
+   else:current=(current+" "+word).strip()
+  if current:wrapped.append(current)
+  chunks=[wrapped[i:i+2] for i in range(0,len(wrapped),2)]
+  chunk_counts=[sum(len(line.split()) for line in chunk) for chunk in chunks]
+  sentence_span=total*w/all_words;offset=0
+  for chunk,count in zip(chunks,chunk_counts):
+   span=sentence_span*count/w
+   cap="\\N".join(chunk)
+   events.append(f"Dialogue: 0,{stamp(cursor+offset)},{stamp(min(total,cursor+offset+span))},Caption,,0,0,0,,{cap}")
+   offset+=span
+  cursor+=sentence_span
+ head=["[Script Info]","ScriptType: v4.00+","PlayResX: 1080","PlayResY: 1920","WrapStyle: 2","[V4+ Styles]","Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding","Style: Caption,DejaVu Sans,44,&H00FFFFFF,&H0000FFFF,&H00101010,&H90000000,1,0,0,0,100,100,0,0,1,3,1,2,100,100,250,1","Style: Brand,DejaVu Sans,40,&H0000D7FF,&H0000D7FF,&H00101010,&H90000000,1,0,0,0,100,100,1,0,1,2,1,8,80,80,90,1","[Events]","Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",f"Dialogue: 1,0:00:00.00,{stamp(min(2.2,total))},Brand,,0,0,0,,FACT BITES UNBOXED"]
+ path.write_text("\n".join(head+events)+"\n",encoding="utf-8")
 PEXELS_MICROWAVE=[
  {"title":"A person uses a microwave oven in a domestic kitchen setting","creator":"Aghyad Najjar","description":"Person operating a microwave oven in a kitchen","url":"https://videos.pexels.com/video-files/4710717/4710717-hd_1920_1080_30fps.mp4","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/video-of-person-using-microwave-4710717/","score":12},
  {"title":"Microwave in a kitchen with timer running, showing 4 seconds","creator":"Aghyad Najjar","description":"Close-up microwave timer and oven in use","url":"https://videos.pexels.com/video-files/4710526/4710526-hd_1920_1080_30fps.mp4","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/video-of-person-heating-up-a-bread-on-a-microwave-4710526/","score":11},
@@ -116,7 +127,7 @@ def main():
  run(["ffmpeg","-y","-loglevel","error","-i",str(frames[0]),"-i",str(frames[1]),"-i",str(frames[2]),"-filter_complex","hstack=inputs=3,scale=810:-1","-frames:v","1",str(OUT/"QA-CONTACT-SHEET.jpg")])
  credits="TOPIC: "+topic["title"]+"\n\n"+narration+"\n\nASSET CREDITS\n"+"\n\n".join(f"{x['title']}\nCreator: {x['creator']}\nLicense: {x['license']}\nSource: {x['page']}" for x in selected)
  (OUT/"ASSET-CREDITS.txt").write_text(credits,encoding="utf-8")
- info=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-show-format","-of","json",str(final)],text=True));v=next(s for s in info["streams"] if s["codec_type"]=="video");d=float(info["format"]["duration"])
+ info=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(final)],text=True));v=next(s for s in info["streams"] if s["codec_type"]=="video");d=float(info["format"]["duration"])
  if (v["width"],v["height"])!=(1080,1920) or not 20<=d<=45 or not any(s["codec_type"]=="audio" for s in info["streams"]):raise RuntimeError("Final technical QA failed")
  print("VIDEO_READY="+str(final));print("CONTACT_SHEET="+str(OUT/"QA-CONTACT-SHEET.jpg"));print(f"DURATION={d:.2f}");print(f"FRAME={v['width']}x{v['height']}");print("SOURCE_COUNT="+str(len(selected)));print("VISUAL_REVIEW_REQUIRED=inspect contact sheet and playback before release")
 if __name__=="__main__":
