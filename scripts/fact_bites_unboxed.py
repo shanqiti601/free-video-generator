@@ -18,10 +18,10 @@ def license_ok(url,rights=""):
  return any(x in s for x in ["creativecommons.org/licenses/by/","creativecommons.org/licenses/by-sa/","creativecommons.org/publicdomain/zero/","creativecommons.org/publicdomain/mark/","public domain"])
 def ia(term):
  q=f'mediatype:movies AND (title:("{term}") OR description:("{term}"))'
- ps=[("q",q),("fl[]","identifier"),("fl[]","title"),("fl[]","description"),("fl[]","licenseurl"),("rows","25"),("output","json")]
+ ps=[("q",q),("fl[]","identifier"),("fl[]","title"),("fl[]","description"),("fl[]","licenseurl"),("rows","10"),("output","json")]
  docs=getj("https://archive.org/advancedsearch.php?"+urllib.parse.urlencode(ps)).get("response",{}).get("docs",[])
  out=[]
- for d in docs:
+ for d in docs[:8]:
   ident=d.get("identifier")
   if not ident:continue
   mdj=getj("https://archive.org/metadata/"+urllib.parse.quote(ident));m=mdj.get("metadata",{})
@@ -73,7 +73,7 @@ def captions(text,path,total):
 def main():
  OUT.mkdir(parents=True,exist_ok=True);topic=TOPICS[(int(os.getenv("GITHUB_RUN_NUMBER","1"))-1)%len(TOPICS)]
  narration=" ".join([topic["hook"]]+topic["lines"]);items=[]
- for term in topic["terms"]:
+ for term in topic["terms"][:2]:
   for label,fn in [("IA",ia),("COMMONS",commons)]:
    try:
     got=fn(term);print(label,term,"=",len(got));items.extend(got[:6])
