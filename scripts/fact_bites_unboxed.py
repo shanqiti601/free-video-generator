@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """FACT BITES UNBOXED: conservative, license-checked video assembly."""
-import asyncio, json, os, re, subprocess, sys, urllib.parse, urllib.request
+import asyncio, html, json, os, re, subprocess, sys, urllib.parse, urllib.request
 from pathlib import Path
 OUT=Path("output/unboxed"); UA="FACT-BITES-UNBOXED/1.1 educational video"
 TOPICS=[
@@ -50,6 +50,37 @@ def commons(term):
   title=p.get("title","")
   out.append({"title":title,"creator":val("Artist"),"description":val("ImageDescription")[:1000],"url":u,"license":lic,"page":"https://commons.wikimedia.org/wiki/"+urllib.parse.quote(title.replace(" ","_")),"score":1})
  return out
+def pexels(term):
+ search_url="https://www.pexels.com/search/videos/?q="+urllib.parse.quote(term)
+ headers={"User-Agent":"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124 Safari/537.36","Accept-Language":"en-US,en;q=0.9"}
+ req=urllib.request.Request(search_url,headers=headers)
+ with urllib.request.urlopen(req,timeout=35) as response:search_html=response.read().decode("utf-8","ignore")
+ ids=list(dict.fromkeys(re.findall(r"/download/video/(\d+)/",search_html)))[:8]
+ out=[]
+ for vid in ids:
+  page_match=re.search(r'href=["\']([^"\']*/video/[^"\']*-'+re.escape(vid)+r'/?)["\']',search_html)
+  page_url=urllib.parse.urljoin("https://www.pexels.com",page_match.group(1)) if page_match else ""
+  if not page_url:continue
+  try:
+   preq=urllib.request.Request(page_url,headers=headers)
+   with urllib.request.urlopen(preq,timeout=25) as pr:page=pr.read().decode("utf-8","ignore")
+   if "Free to use" not in page and "Free download" not in page:continue
+   title_match=re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\']([^"\']+)',page)
+   desc_match=re.search(r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)',page)
+   title=html.unescape(title_match.group(1)) if title_match else term
+   desc=html.unescape(desc_match.group(1)) if desc_match else ""
+   creator_match=re.search(r'"photographerName"\s*:\s*"([^"]+)"',page)
+   creator=html.unescape(creator_match.group(1)) if creator_match else "Pexels contributor"
+   dreq=urllib.request.Request(f"https://www.pexels.com/download/video/{vid}/",headers={**headers,"Referer":page_url})
+   with urllib.request.urlopen(dreq,timeout=35) as dr:direct=dr.geturl()
+   tokens=[w for w in re.findall(r"[a-z0-9]+",term.lower()) if len(w)>2]
+   corpus=(title+" "+desc).lower()
+   score=sum(2 if w in title.lower() else 1 for w in tokens if w in corpus)
+   if score<1 or not direct.lower().endswith(".mp4"):continue
+   out.append({"title":title,"creator":creator,"description":desc[:1000],"url":direct,"license":"Pexels License — free commercial use","page":page_url,"score":score})
+  except Exception as e:print("PEXELS_ASSET_WARNING",vid,str(e)[:120])
+ return sorted(out,key=lambda x:x["score"],reverse=True)
+
 def run(c):subprocess.run(c,check=True)
 def dur(p):return float(subprocess.check_output(["ffprobe","-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",str(p)],text=True).strip())
 def dl(item,p):
@@ -87,9 +118,14 @@ PEXELS_MICROWAVE=[
  {"title":"Microwave oven in a kitchen setup, ideal for home cooking scenes","creator":"Aghyad Najjar","description":"Microwave oven and food heating in a kitchen","url":"https://videos.pexels.com/video-files/4710520/4710520-hd_1920_1080_30fps.mp4","license":"Pexels License — free commercial use","page":"https://www.pexels.com/video/video-of-person-putting-bread-on-a-microwave-4710520/","score":10}
 ]
 def main():
- OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("FACT_BITES_TOPIC_INDEX",(int(os.getenv("GITHUB_RUN_NUMBER","1"))-1)))%len(TOPICS);topic=TOPICS[idx]
+ OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("GITHUB_RUN_NUMBER","1"))%len(TOPICS);topic=TOPICS[idx]
  narration=" ".join([topic["hook"]]+topic["lines"]);items=[]
  if topic["title"]=="Why microwave food heats unevenly":items.extend(PEXELS_MICROWAVE);print("PEXELS_CURATED_ASSETS="+str(len(PEXELS_MICROWAVE)))
+ if not items:
+  for term in topic["terms"][:2]:
+   try:
+    got=pexels(term);print("PEXELS",term,"=",len(got));items.extend(got[:6])
+   except Exception as e:print("PEXELS_SEARCH_WARNING",term,str(e)[:160])
  for term in ([] if items else topic["terms"][:2]):
   for label,fn in [("IA",ia),("COMMONS",commons)]:
    try:
