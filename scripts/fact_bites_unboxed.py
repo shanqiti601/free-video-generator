@@ -138,15 +138,14 @@ def main():
  silent=OUT/"silent.mp4";run(["ffmpeg","-y","-loglevel","error","-f","concat","-safe","0","-i",str(concat),"-c","copy","-t",str(total),str(silent)])
  ass=OUT/"captions.ass";captions(narration,ass,total);final=OUT/"FACT-BITES-UNBOXED.mp4"
  run(["ffmpeg","-y","-loglevel","error","-i",str(silent),"-i",str(voice),"-vf",f"ass={ass}:fontsdir=/usr/share/fonts/truetype/dejavu","-map","0:v:0","-map","1:a:0","-c:v","libx264","-preset","fast","-crf","19","-c:a","aac","-b:a","192k","-shortest","-movflags","+faststart","-pix_fmt","yuv420p",str(final)])
-  credits="TOPIC: "+topic["title"]+"\n\n"+narration+"\n\nASSET CREDITS\n"+"\n\n".join(f"{x['title']}\nCreator: {x['creator']}\nLicense: {x['license']}\nSource: {x['page']}" for x in selected)
-  (OUT/"ASSET-CREDITS.txt").write_text(credits,encoding="utf-8")
+ credits="TOPIC: "+topic["title"]+"\n\n"+narration+"\n\nASSET CREDITS\n"+"\n\n".join(f"{x['title']}\nCreator: {x['creator']}\nLicense: {x['license']}\nSource: {x['page']}" for x in selected)
+ (OUT/"ASSET-CREDITS.txt").write_text(credits,encoding="utf-8")
  frames=[]
  for i in range(3):
   frame=OUT/f"qa_{i+1}.jpg";at=min(total-0.5,total*(i+0.5)/3)
   run(["ffmpeg","-y","-loglevel","error","-ss",str(at),"-i",str(final),"-frames:v","1","-q:v","3",str(frame)]);frames.append(frame)
  run(["ffmpeg","-y","-loglevel","error","-i",str(frames[0]),"-i",str(frames[1]),"-i",str(frames[2]),"-filter_complex","hstack=inputs=3,scale=810:-1","-frames:v","1",str(OUT/"QA-CONTACT-SHEET.jpg")])
- credits="TOPIC: "+topic["title"]+"\n\n"+narration+"\n\nASSET CREDITS\n"+"\n\n".join(f"{x['title']}\nCreator: {x['creator']}\nLicense: {x['license']}\nSource: {x['page']}" for x in selected)
- (OUT/"ASSET-CREDITS.txt").write_text(credits,encoding="utf-8")
+
  info=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(final)],text=True));v=next(s for s in info["streams"] if s["codec_type"]=="video");d=float(info["format"]["duration"])
  if (v["width"],v["height"])!=(1080,1920) or not 20<=d<=45 or not any(s["codec_type"]=="audio" for s in info["streams"]):raise RuntimeError("Final technical QA failed")
  print("VIDEO_READY="+str(final));print("CONTACT_SHEET="+str(OUT/"QA-CONTACT-SHEET.jpg"));print(f"DURATION={d:.2f}");print(f"FRAME={v['width']}x{v['height']}");print("SOURCE_COUNT="+str(len(selected)));print("VISUAL_REVIEW_REQUIRED=inspect contact sheet and playback before release")
