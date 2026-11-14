@@ -37,7 +37,7 @@ jobs:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: python scripts/fact_bites_unboxed.py
       - name: Upload render and credits
-        if: success()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: FACT-BITES-UNBOXED-${{ github.run_number }}
@@ -45,5 +45,6 @@ jobs:
             output/unboxed/FACT-BITES-UNBOXED.mp4
             output/unboxed/ASSET-CREDITS.txt
             output/unboxed/captions.ass
-          if-no-files-found: error
+            output/unboxed/QA-CONTACT-SHEET.jpg
+          if-no-files-found: ignore
           retention-days: 14
