@@ -60,14 +60,14 @@ def dl(item,p):
 def stamp(t):
  n=int(t*100);h,n=divmod(n,360000);m,n=divmod(n,6000);s,n=divmod(n,100);return f"{h}:{m:02}:{s:02}.{n:02}"
 def captions(text,path,total):
- sentences=re.split(r"(?<=[.!?])\\s+",text.strip());weights=[max(1,len(s.split())) for s in sentences];den=sum(weights);t=0;ev=[]
+ sentences=re.split(r"(?<=[.!?])\s+",text.strip());weights=[max(1,len(s.split())) for s in sentences];den=sum(weights);t=0;ev=[]
  for s,w in zip(sentences,weights):
   span=total*w/den;lines=[];cur=""
   for word in s.split():
    if len(cur)+len(word)+1>32:lines.append(cur);cur=word
    else:cur=(cur+" "+word).strip()
   if cur:lines.append(cur)
-  cap="\\\\N".join(lines[:2]);ev.append(f"Dialogue: 0,{stamp(t)},{stamp(min(total,t+span))},Caption,,0,0,0,,{cap}");t+=span
+  cap="\\N".join(lines[:2]);ev.append(f"Dialogue: 0,{stamp(t)},{stamp(min(total,t+span))},Caption,,0,0,0,,{cap}");t+=span
  head=["[Script Info]","ScriptType: v4.00+","PlayResX: 1080","PlayResY: 1920","WrapStyle: 2","[V4+ Styles]","Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding","Style: Caption,DejaVu Sans,48,&H00FFFFFF,&H0000FFFF,&H00101010,&H90000000,1,0,0,0,100,100,0,0,1,3,1,2,100,100,250,1","Style: Brand,DejaVu Sans,40,&H0000D7FF,&H0000D7FF,&H00101010,&H90000000,1,0,0,0,100,100,1,0,1,2,1,8,80,80,90,1","[Events]","Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",f"Dialogue: 1,0:00:00.00,{stamp(min(2.2,total))},Brand,,0,0,0,,FACT BITES UNBOXED"]
  path.write_text("\n".join(head+ev)+"\n",encoding="utf-8")
 def main():
