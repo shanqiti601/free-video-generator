@@ -4,9 +4,9 @@ from mathutils import Vector
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
 for d in bpy.data.materials: bpy.data.materials.remove(d)
 scene=bpy.context.scene
-scene.render.engine='BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items.keys() else 'BLENDER_EEVEE'
-scene.render.resolution_x=540; scene.render.resolution_y=960; scene.render.resolution_percentage=100
-scene.render.fps=18; scene.frame_start=1; scene.frame_end=144
+scene.render.engine='CYCLES'\nscene.cycles.device='CPU'\nscene.cycles.samples=8\nscene.render.resolution_percentage=67
+scene.render.resolution_x=540; scene.render.resolution_y=960
+scene.render.fps=18; scene.frame_start=1; scene.frame_end=96
 scene.render.image_settings.file_format='FFMPEG'; scene.render.ffmpeg.format='MPEG4'; scene.render.ffmpeg.codec='H264'; scene.render.ffmpeg.constant_rate_factor='HIGH'; scene.render.filepath=os.path.abspath('output/unboxed/BLENDER-3D-PILOT.mp4')
 scene.render.image_settings.color_mode='RGB'
 scene.render.film_transparent=False
@@ -83,8 +83,8 @@ area('Front fill',(0,-4,0),650,(.35,.55,1),3,(0,0,1))
 # camera, slight animated orbit and close-up perspective
 bpy.ops.object.camera_add(location=(5,-9,2.2));cam=bpy.context.object;cam.name='Cinematic product camera';cam.data.type='ORTHO';cam.data.ortho_scale=7.8
 target=Vector((0,0,1.3));cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();scene.camera=cam
-cam.keyframe_insert(data_path='location',frame=1);cam.location=(4.1,-9.5,1.8);cam.keyframe_insert(data_path='location',frame=144)
-cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.keyframe_insert(data_path='rotation_euler',frame=144)
+cam.keyframe_insert(data_path='location',frame=1);cam.location=(4.1,-9.5,1.8);cam.keyframe_insert(data_path='location',frame=96)
+cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.keyframe_insert(data_path='rotation_euler',frame=96)
 # animate final assembled reveal: hold exploded, assemble, then hold
 for obj in [reservoir,inkcore,spring,tip,socket,ball]:
  obj.keyframe_insert(data_path='location',frame=108)
