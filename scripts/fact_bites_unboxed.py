@@ -77,8 +77,8 @@ PEXELS_MICROWAVE=[
 ]
 def main():
  OUT.mkdir(parents=True,exist_ok=True);idx=int(os.getenv("FACT_BITES_TOPIC_INDEX",(int(os.getenv("GITHUB_RUN_NUMBER","1"))-1)))%len(TOPICS);topic=TOPICS[idx]
- if topic["title"]=="Why microwave food heats unevenly":items.extend(PEXELS_MICROWAVE);print("PEXELS_CURATED_ASSETS="+str(len(PEXELS_MICROWAVE)))
  narration=" ".join([topic["hook"]]+topic["lines"]);items=[]
+ if topic["title"]=="Why microwave food heats unevenly":items.extend(PEXELS_MICROWAVE);print("PEXELS_CURATED_ASSETS="+str(len(PEXELS_MICROWAVE)))
  for term in topic["terms"][:2]:
   for label,fn in [("IA",ia),("COMMONS",commons)]:
    try:
