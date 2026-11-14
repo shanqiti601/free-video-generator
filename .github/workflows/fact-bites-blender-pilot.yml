@@ -2,6 +2,11 @@ name: FACT BITES UNBOXED — Blender 3D Experimental Pilot
 
 on:
   workflow_dispatch:
+  push:
+    branches: [experiment/blender-3d-pilot]
+    paths:
+      - 'scripts/blender_3d_pilot.py'
+      - '.github/workflows/fact-bites-blender-pilot.yml'
 
 permissions:
   contents: read
