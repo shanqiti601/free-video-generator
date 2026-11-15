@@ -1,4 +1,5 @@
 name: FACT BITES UNBOXED — Full 3D Episode
+# Rebuild after render-framing and denoising adjustments
 on:
   workflow_dispatch:
   push:
