@@ -1,104 +1,205 @@
 import bpy, math, os
 from mathutils import Vector
-# FACT BITES UNBOXED — genuine procedural 3D mechanism pilot
-bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
-for d in bpy.data.materials: bpy.data.materials.remove(d)
-scene=bpy.context.scene
-scene.render.engine='CYCLES'
-scene.cycles.device='CPU'
-scene.cycles.samples=8
-scene.cycles.use_denoising=False
-scene.render.resolution_percentage=100
-scene.render.resolution_x=540; scene.render.resolution_y=960
-scene.render.fps=18; scene.frame_start=1; scene.frame_end=96
-scene.render.image_settings.file_format='FFMPEG'; scene.render.ffmpeg.format='MPEG4'; scene.render.ffmpeg.codec='H264'; scene.render.ffmpeg.constant_rate_factor='HIGH'; scene.render.filepath=os.path.abspath('output/unboxed/BLENDER-3D-PILOT.mp4')
-scene.render.image_settings.color_mode='RGB'
-scene.render.film_transparent=False
-scene.world.color=(0.018,0.025,0.045)
-scene.view_settings.view_transform='AgX'
-def mat(name,color,metal=0,rough=.35,alpha=1):
- m=bpy.data.materials.new(name); m.diffuse_color=(*color,alpha); m.use_nodes=True
- bs=m.node_tree.nodes.get('Principled BSDF'); bs.inputs['Base Color'].default_value=(*color,alpha); bs.inputs['Metallic'].default_value=metal; bs.inputs['Roughness'].default_value=rough
- if alpha<1: bs.inputs['Alpha'].default_value=alpha
- return m
-blue=mat('Deep cobalt lacquer',(0.018,.12,.48),.72,.22)
-steel=mat('Brushed precision steel',(.48,.58,.7),.88,.24)
-gold=mat('Warm brass',(.72,.38,.08),.78,.25)
-ink=mat('Saturated blue ink',(.005,.08,.8),.12,.18)
-glass=mat('Translucent reservoir',(.35,.68,.9),.25,.18,.28)
-dark=mat('Graphite',(.012,.018,.03),.25,.3)
-white=mat('Soft white',(.82,.9,1),.05,.35)
-def cyl(name,r,depth,loc,material,vertices=64,bevel=.025):
- bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=r, depth=depth, location=loc)
- o=bpy.context.object;o.name=name;o.data.materials.append(material)
- if bevel:
-  mod=o.modifiers.new('Machined edge highlights','BEVEL');mod.width=bevel;mod.segments=3
-  o.modifiers.new('Weighted corner normals','WEIGHTED_NORMAL')
- return o
-def sphere(name,r,loc,material):
- bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=r, location=loc)
- o=bpy.context.object;o.name=name;o.data.materials.append(material); bpy.ops.object.shade_smooth();return o
-def key_move(o, start, end, f1=1, f2=72):
- o.location=start;o.keyframe_insert(data_path='location',frame=f1)
- o.location=end;o.keyframe_insert(data_path='location',frame=f2)
-# Pen components are aligned on Z; exploded assembly closes into a complete pen.
-barrel=cyl('01 — Outer pen barrel',.24,3.6,(0,0,1.8),blue,96,.06)
-# barrel visual cutaway: long clear side window strip on front
-window=cyl('Cutaway inspection window',.245,2.25,(0,-.012,1.82),glass,96,.012)
-# cap and click button
-cap=cyl('Rear click housing',.255,.46,(0,0,3.83),dark,96,.045)
-button=cyl('Click button',.16,.16,(0,0,4.14),gold,64,.025)
-# tip assembly and small writing ball
-tip=cyl('Tapered metal nose',.17,.55,(0,0,-.23),steel,64,.04)
-ball=sphere('Rotating ballpoint tip',.075,(0,0,-.55),steel)
-socket=cyl('Ball retaining socket',.105,.15,(0,0,-.43),gold,64,.018)
-# ink tube, inner ink core and spring
-reservoir=cyl('Transparent ink reservoir',.095,2.45,(0,0,1.55),glass,48,.018)
-inkcore=cyl('Visible blue ink column',.061,1.95,(0,0,1.48),ink,48,.01)
-# spring as a bevelled 3D curve helix
-cu=bpy.data.curves.new('Compression spring geometry','CURVE');cu.dimensions='3D';cu.bevel_depth=.025;cu.bevel_resolution=3
-sp=cu.splines.new('POLY'); pts=180;sp.points.add(pts-1)
-for i in range(pts):
- t=i/(pts-1);a=t*math.pi*2*12
- sp.points[i].co=(.13*math.cos(a),.13*math.sin(a),.55+t*.8,1)
-spring=bpy.data.objects.new('Stainless compression spring',cu);bpy.context.collection.objects.link(spring);spring.data.materials.append(steel)
-# floating ink bead at the ball, subtle and illustrative
-drop=sphere('Ink transfer bead',.045,(0,0,-.68),ink)
-# exploded arrangement: reservoir and spring rise; nose and ball descend, then components assemble
-for obj,st,en in [
- (reservoir,(0,0,2.45),(0,0,1.55)),(inkcore,(0,0,2.4),(0,0,1.48)),
- (spring,(0,0,3.45),(0,0,.95)),(tip,(0,0,-.9),(0,0,-.23)),
- (socket,(0,0,-.85),(0,0,-.43)),(ball,(0,0,-1.1),(0,0,-.55))]:
- key_move(obj,st,en,1,72)
-# barrel reveal: fades not required; hold central while parts animate
-# typography in-scene, kept away from safe edges
-def txt(body,loc,size,material,name):
- cu=bpy.data.curves.new(name,'FONT');cu.body=body;cu.size=size;cu.extrude=.001
- ob=bpy.data.objects.new(name,cu);bpy.context.collection.objects.link(ob);ob.location=loc;ob.rotation_euler=(math.radians(90),0,0);ob.data.materials.append(material);return ob
-txt('INSIDE A BALLPOINT PEN',(-1.35,-.65,4.85),.19,white,'Title')
-txt('BALL  •  SOCKET  •  INK RESERVOIR',(-1.35,-.65,-1.35),.105,white,'Mechanism caption')
-# floor and studio lighting
-cyl('Studio plinth',2.7,.12,(0,0,-1.75),dark,96,.08)
-def area(name,loc,power,color,size,target):
- bpy.ops.object.light_add(type='AREA',location=loc);l=bpy.context.object;l.name=name;l.data.energy=power;l.data.color=color;l.data.shape='DISK';l.data.size=size;l.rotation_euler=(Vector(target)-l.location).to_track_quat('-Z','Y').to_euler()
-area('Large cool key', (4,-5,6),1100,(.55,.72,1),5,(0,0,1))
-area('Warm rim',(-4,1,3),950,(1,.48,.2),4,(0,0,1))
-area('Front fill',(0,-4,0),650,(.35,.55,1),3,(0,0,1))
-# camera, slight animated orbit and close-up perspective
-bpy.ops.object.camera_add(location=(5,-9,2.2));cam=bpy.context.object;cam.name='Cinematic product camera';cam.data.type='ORTHO';cam.data.ortho_scale=7.8
-target=Vector((0,0,1.3));cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();scene.camera=cam
-cam.keyframe_insert(data_path='location',frame=1);cam.location=(4.1,-9.5,1.8);cam.keyframe_insert(data_path='location',frame=96)
-cam.rotation_euler=(target-cam.location).to_track_quat('-Z','Y').to_euler();cam.keyframe_insert(data_path='rotation_euler',frame=96)
-# animate final assembled reveal: hold exploded, assemble, then hold
-for obj in [reservoir,inkcore,spring,tip,socket,ball]:
- obj.keyframe_insert(data_path='location',frame=108)
-# smooth interpolation
-for ob in scene.objects:
- if ob.animation_data and ob.animation_data.action:
-  for fc in ob.animation_data.action.fcurves:
-   for kp in fc.keyframe_points: kp.interpolation='BEZIER'
+
+# FACT BITES UNBOXED — 27-second procedural 3D mechanism explainer
+OUT = os.path.abspath("output/unboxed")
+os.makedirs(OUT, exist_ok=True)
+bpy.ops.object.select_all(action="SELECT")
+bpy.ops.object.delete(use_global=False)
+for datablocks in (bpy.data.meshes, bpy.data.curves, bpy.data.materials, bpy.data.cameras, bpy.data.lights):
+    for block in list(datablocks):
+        if block.users == 0:
+            datablocks.remove(block)
+
+scene = bpy.context.scene
+scene.render.engine = "CYCLES"
+scene.cycles.device = "CPU"
+scene.cycles.samples = 8
+scene.cycles.use_denoising = False
+scene.render.resolution_x = 540
+scene.render.resolution_y = 960
+scene.render.resolution_percentage = 100
+scene.render.fps = 18
+scene.frame_start = 1
+scene.frame_end = 486
+scene.render.image_settings.file_format = "FFMPEG"
+scene.render.ffmpeg.format = "MPEG4"
+scene.render.ffmpeg.codec = "H264"
+scene.render.ffmpeg.constant_rate_factor = "MEDIUM"
+scene.render.filepath = os.path.join(OUT, "BLENDER-3D-BASE.mp4")
+scene.world.color = (0.008, 0.014, 0.03)
+scene.view_settings.view_transform = "AgX"
+scene.render.image_settings.color_mode = "RGB"
+
+def material(name, color, metallic=0.0, roughness=0.3, alpha=1.0):
+    m = bpy.data.materials.new(name)
+    m.diffuse_color = (*color, alpha)
+    m.use_nodes = True
+    bs = m.node_tree.nodes.get("Principled BSDF")
+    bs.inputs["Base Color"].default_value = (*color, alpha)
+    bs.inputs["Metallic"].default_value = metallic
+    bs.inputs["Roughness"].default_value = roughness
+    bs.inputs["Alpha"].default_value = alpha
+    return m
+
+blue = material("Deep cobalt anodized alloy", (0.012, 0.075, 0.34), .78, .22)
+steel = material("Satin machined stainless steel", (.48, .59, .72), .9, .2)
+gold = material("Warm brass detail", (.72, .39, .09), .82, .22)
+ink = material("Electric blue ink", (.008, .07, .8), .12, .17)
+glass = material("Clear polymer ink tube", (.28, .58, .78), .18, .16, .22)
+black = material("Graphite polymer", (.009, .014, .026), .22, .26)
+white = material("Soft studio white", (.78, .87, 1.0), .05, .32)
+
+def cylinder(name, radius, depth, loc, mat, vertices=64, bevel=.018):
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc)
+    o = bpy.context.object
+    o.name = name
+    o.data.materials.append(mat)
+    if bevel:
+        b = o.modifiers.new("Precision edge radius", "BEVEL")
+        b.width = bevel
+        b.segments = 3
+        o.modifiers.new("Weighted highlights", "WEIGHTED_NORMAL")
+    return o
+
+def cone(name, r1, r2, depth, loc, mat):
+    bpy.ops.mesh.primitive_cone_add(vertices=96, radius1=r1, radius2=r2, depth=depth, location=loc)
+    o = bpy.context.object
+    o.name = name
+    o.data.materials.append(mat)
+    b = o.modifiers.new("Turned metal edge", "BEVEL")
+    b.width = .018
+    b.segments = 3
+    o.modifiers.new("Weighted highlights", "WEIGHTED_NORMAL")
+    return o
+
+def sphere(name, radius, loc, mat):
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=40, ring_count=24, radius=radius, location=loc)
+    o = bpy.context.object
+    o.name = name
+    o.data.materials.append(mat)
+    bpy.ops.object.shade_smooth()
+    return o
+
+def hollow_cutaway_barrel():
+    # A real hollow shell with a front inspection opening, not an opaque cylinder.
+    verts, faces = [], []
+    steps = 96
+    angles = [math.radians(-35 + 250*i/steps) for i in range(steps+1)]
+    z0, z1, ro, ri = .42, 4.0, .255, .218
+    for z, r in ((z0, ro), (z1, ro), (z0, ri), (z1, ri)):
+        for a in angles:
+            verts.append((r*math.cos(a), r*math.sin(a), z))
+    n = len(angles)
+    for i in range(steps):
+        # outer, inner, and narrow cutaway boundary faces
+        faces.append((i, i+1, n+i+1, n+i))
+        faces.append((2*n+i, 3*n+i, 3*n+i+1, 2*n+i+1))
+        faces.append((i, 2*n+i, 2*n+i+1, i+1))
+        faces.append((n+i, n+i+1, 3*n+i+1, 3*n+i))
+    faces.extend([(0, n, 3*n, 2*n), (steps, 2*n+steps, 3*n+steps, n+steps)])
+    mesh = bpy.data.meshes.new("Open-front hollow barrel mesh")
+    mesh.from_pydata(verts, [], faces)
+    mesh.materials.append(blue)
+    mesh.update()
+    obj = bpy.data.objects.new("01 — Hollow cobalt barrel with cutaway", mesh)
+    bpy.context.collection.objects.link(obj)
+    bevel = obj.modifiers.new("Micro edge chamfers", "BEVEL")
+    bevel.width = .012
+    bevel.segments = 2
+    obj.modifiers.new("Weighted normals", "WEIGHTED_NORMAL")
+    return obj
+
+def animate_location(obj, start, end, f_start=1, f_end=235):
+    obj.location = start
+    obj.keyframe_insert(data_path="location", frame=f_start)
+    obj.location = end
+    obj.keyframe_insert(data_path="location", frame=f_end)
+    obj.keyframe_insert(data_path="location", frame=486)
+
+# Main housing and upper clicker
+barrel = hollow_cutaway_barrel()
+grip = cylinder("Lower grip ring", .259, .16, (0,0,.56), black, 96, .025)
+ring1 = cylinder("Brass trim ring", .261, .055, (0,0,3.91), gold, 96, .012)
+cap = cylinder("Click mechanism housing", .25, .43, (0,0,4.16), black, 96, .035)
+button = cylinder("Spring-loaded click button", .145, .16, (0,0,4.46), gold, 64, .025)
+button_top = cylinder("Button crown", .12, .035, (0,0,4.56), steel, 64, .012)
+
+# Internal ink cartridge and blue ink core
+reservoir = cylinder("Transparent ink reservoir", .105, 2.62, (0,0,2.12), glass, 64, .012)
+ink_core = cylinder("Visible ink column", .067, 2.22, (0,0,2.04), ink, 48, .009)
+rear_plug = cylinder("Cartridge rear seal", .11, .13, (0,0,3.49), steel, 48, .012)
+
+# Spring is a true 3D helix
+curve = bpy.data.curves.new("Compression spring helix geometry", "CURVE")
+curve.dimensions = "3D"
+curve.bevel_depth = .022
+curve.bevel_resolution = 4
+spline = curve.splines.new("POLY")
+count = 220
+spline.points.add(count-1)
+for i in range(count):
+    t = i/(count-1)
+    a = t*math.tau*11
+    spline.points[i].co = (.125*math.cos(a), .125*math.sin(a), .18 + .78*t, 1)
+spring = bpy.data.objects.new("Stainless click-return spring", curve)
+bpy.context.collection.objects.link(spring)
+spring.data.materials.append(steel)
+
+# Nose cone, retaining socket and writing ball
+nose = cone("Turned steel nose cone", .18, .055, .62, (0,0,.13), steel)
+socket = cylinder("Ball retaining socket", .095, .16, (0,0,-.22), gold, 64, .012)
+ball = sphere("Polished rolling ballpoint", .065, (0,0,-.34), steel)
+ink_tip = sphere("Ink transfer meniscus", .027, (0,-.003,-.405), ink)
+
+# Exploded-to-assembled movement: every part returns to its true mechanical position.
+animate_location(reservoir, (0,0,5.2), (0,0,2.12))
+animate_location(ink_core, (0,0,5.15), (0,0,2.04))
+animate_location(rear_plug, (0,0,5.0), (0,0,3.49))
+animate_location(spring, (0,0,5.4), (0,0,.58))
+animate_location(nose, (0,0,-.9), (0,0,.13))
+animate_location(socket, (0,0,-.95), (0,0,-.22))
+animate_location(ball, (0,0,-1.0), (0,0,-.34))
+animate_location(ink_tip, (0,0,-1.05), (0,-.003,-.405))
+
+# Studio stage and soft cinematic lighting
+cylinder("Floating graphite display base", 1.15, .12, (0,0,-.82), black, 96, .05)
+def area_light(name, loc, power, color, size, target):
+    bpy.ops.object.light_add(type="AREA", location=loc)
+    l = bpy.context.object
+    l.name = name
+    l.data.energy = power
+    l.data.color = color
+    l.data.shape = "DISK"
+    l.data.size = size
+    l.rotation_euler = (Vector(target)-l.location).to_track_quat("-Z","Y").to_euler()
+area_light("Cool key softbox", (3.5,-4.5,6), 900, (.55,.72,1), 4.0, (0,0,2))
+area_light("Warm metallic rim", (-3.5,1.5,3.5), 1050, (1,.48,.2), 3.0, (0,0,2))
+area_light("Front fill strip", (0,-4,1), 500, (.35,.55,1), 3.0, (0,0,2))
+area_light("Top edge light", (1,2,6), 700, (.65,.78,1), 2.5, (0,0,3))
+
+# Portrait product camera; framing leaves clean safe zones for title and subtitles.
+bpy.ops.object.camera_add(location=(0,-12,2.15))
+cam = bpy.context.object
+cam.name = "Portrait macro product camera"
+cam.data.type = "ORTHO"
+cam.data.ortho_scale = 2.95
+target = Vector((0,0,2.0))
+cam.rotation_euler = (target-cam.location).to_track_quat("-Z","Y").to_euler()
+scene.camera = cam
+cam.keyframe_insert(data_path="location", frame=1)
+cam.location = (.35,-11.2,2.35)
+cam.rotation_euler = (Vector((0,0,2.0))-cam.location).to_track_quat("-Z","Y").to_euler()
+cam.keyframe_insert(data_path="location", frame=486)
+cam.keyframe_insert(data_path="rotation_euler", frame=486)
+
+# Smooth animation curves
+for obj in scene.objects:
+    if obj.animation_data and obj.animation_data.action:
+        for fc in obj.animation_data.action.fcurves:
+            for kp in fc.keyframe_points:
+                kp.interpolation = "BEZIER"
+
 scene.frame_set(1)
-os.makedirs('output/unboxed',exist_ok=True)
-scene.render.filepath=os.path.abspath('output/unboxed/BLENDER-3D-PILOT.mp4')
 bpy.ops.render.render(animation=True)
-print('BLENDER_3D_RENDER_OK',scene.render.resolution_x,scene.render.resolution_y,scene.frame_end)
+print("FACT_BITES_3D_BASE_RENDER_OK", scene.render.resolution_x, scene.render.resolution_y, scene.frame_end)
