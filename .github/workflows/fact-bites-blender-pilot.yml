@@ -39,43 +39,33 @@ jobs:
           That tiny metal ball is why a pen can write. As the pen moves, the ball rolls across the paper, picking up ink from the reservoir inside. A narrow metal socket holds the ball in place while still letting it spin freely. The spring returns the click mechanism after each press. A tiny rolling machine turns motion into writing.
           EOF
           python -m edge_tts --voice en-US-GuyNeural --rate=-8% --text "$(cat output/unboxed/narration.txt)" --write-media output/unboxed/narration.mp3
-          cat > output/unboxed/subtitles.srt <<'EOF'
-          1
-          00:00:00,000 --> 00:00:03,600
-          That tiny metal ball is why a pen can write.
+          cat > output/unboxed/subtitles.ass <<'EOF'
+          [Script Info]
+          ScriptType: v4.00+
+          PlayResX: 540
+          PlayResY: 960
+          WrapStyle: 2
+          ScaledBorderAndShadow: yes
           
-          2
-          00:00:03,600 --> 00:00:07,200
-          As the pen moves, the ball rolls across the paper.
+          [V4+ Styles]
+          Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+          Style: BottomCaption,DejaVu Sans,17,&H00FFFFFF,&H0000FFFF,&HCC000000,&H60000000,-1,0,0,0,100,100,0,0,1,1.4,0.5,2,38,38,88,1
           
-          3
-          00:00:07,200 --> 00:00:10,800
-          Its surface picks up ink from the reservoir inside.
-          
-          4
-          00:00:10,800 --> 00:00:14,400
-          A narrow metal socket holds the ball in place,
-          
-          5
-          00:00:14,400 --> 00:00:17,700
-          while still letting it spin freely.
-          
-          6
-          00:00:17,700 --> 00:00:21,500
-          The spring returns the click mechanism after each press.
-          
-          7
-          00:00:21,500 --> 00:00:25,200
-          A tiny rolling machine turns motion into writing.
-          
-          8
-          00:00:25,200 --> 00:00:27,000
-          FACT BITES UNBOXED
+          [Events]
+          Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+          Dialogue: 0,0:00:00.00,0:00:03.60,BottomCaption,,0,0,0,,That tiny metal ball is why a pen can write.
+          Dialogue: 0,0:00:03.60,0:00:07.20,BottomCaption,,0,0,0,,As the pen moves, the ball rolls across the paper.
+          Dialogue: 0,0:00:07.20,0:00:10.80,BottomCaption,,0,0,0,,Its surface picks up ink from the reservoir inside.
+          Dialogue: 0,0:00:10.80,0:00:14.40,BottomCaption,,0,0,0,,A narrow metal socket holds the ball in place,
+          Dialogue: 0,0:00:14.40,0:00:17.70,BottomCaption,,0,0,0,,while still letting it spin freely.
+          Dialogue: 0,0:00:17.70,0:00:21.50,BottomCaption,,0,0,0,,The spring returns the click mechanism after each press.
+          Dialogue: 0,0:00:21.50,0:00:25.20,BottomCaption,,0,0,0,,A tiny rolling machine turns motion into writing.
+          Dialogue: 0,0:00:25.20,0:00:27.00,BottomCaption,,0,0,0,,FACT BITES UNBOXED
           EOF
       - name: Add safe-area brand, burned-in subtitles and narration
         run: |
           ffmpeg -y -i output/unboxed/BLENDER-3D-BASE.mp4 -i output/unboxed/narration.mp3 \
-            -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='FACT BITES UNBOXED':fontcolor=white:fontsize=21:borderw=1:bordercolor=black@0.55:x=(w-text_w)/2:y=54,subtitles=output/unboxed/subtitles.srt:force_style='FontName=DejaVu Sans,FontSize=18,PrimaryColour=&H00FFFFFF,OutlineColour=&H80000000,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=118,MarginL=42,MarginR=42'" \
+            -vf "drawtext=fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf:text='FACT BITES UNBOXED':fontcolor=white:fontsize=21:borderw=1:bordercolor=black@0.55:x=(w-text_w)/2:y=54,subtitles=output/unboxed/subtitles.ass" \
             -af "apad=pad_dur=27" -t 27 -map 0:v:0 -map 1:a:0 -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -c:a aac -b:a 160k -shortest output/unboxed/FACT-BITES-UNBOXED-EP01.mp4
           test -s output/unboxed/FACT-BITES-UNBOXED-EP01.mp4
       - name: Verify complete episode and extract visual QA frames
@@ -106,6 +96,6 @@ jobs:
             output/unboxed/QA-METADATA.json
             output/unboxed/QA-CONTACT-SHEET.jpg
             output/unboxed/narration.txt
-            output/unboxed/subtitles.srt
+            output/unboxed/subtitles.ass
           if-no-files-found: ignore
           retention-days: 14
