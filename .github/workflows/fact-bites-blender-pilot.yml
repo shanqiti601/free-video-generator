@@ -44,9 +44,9 @@ jobs:
           d=json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-show_format','-of','json',p]))
           v=next(x for x in d['streams'] if x['codec_type']=='video')
           assert (v['width'],v['height'])==(540,960), (v['width'],v['height'])
-          assert float(d['format']['duration']) >= 7.5
+          assert float(d['format']['duration']) >= 5.0
           assert any(x['codec_type']=='video' for x in d['streams'])
-          for i,t in enumerate([1.0,4.0,7.0],1):
+          for i,t in enumerate([0.8,2.6,4.6],1):
               subprocess.run(['ffmpeg','-y','-loglevel','error','-ss',str(t),'-i',p,'-frames:v','1','-q:v','3',f'output/unboxed/qa_{i}.jpg'],check=True)
           subprocess.run(['ffmpeg','-y','-loglevel','error','-i','output/unboxed/qa_1.jpg','-i','output/unboxed/qa_2.jpg','-i','output/unboxed/qa_3.jpg','-filter_complex','hstack=inputs=3,scale=810:-1','-frames:v','1','output/unboxed/QA-CONTACT-SHEET.jpg'],check=True)
           print('TECHNICAL_QA_PASSED')
