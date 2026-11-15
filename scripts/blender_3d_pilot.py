@@ -14,7 +14,7 @@ for datablocks in (bpy.data.meshes, bpy.data.curves, bpy.data.materials, bpy.dat
 scene = bpy.context.scene
 scene.render.engine = "CYCLES"
 scene.cycles.device = "CPU"
-scene.cycles.samples = 24
+scene.cycles.samples = 64
 scene.cycles.use_denoising = False
 scene.render.resolution_x = 540
 scene.render.resolution_y = 960
@@ -183,7 +183,7 @@ bpy.ops.object.camera_add(location=(0,-12,2.15))
 cam = bpy.context.object
 cam.name = "Portrait macro product camera"
 cam.data.type = "ORTHO"
-cam.data.ortho_scale = 4.2
+cam.data.ortho_scale = 6.2
 target = Vector((0,0,2.0))
 cam.rotation_euler = (target-cam.location).to_track_quat("-Z","Y").to_euler()
 scene.camera = cam
