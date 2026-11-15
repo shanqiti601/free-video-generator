@@ -7,6 +7,7 @@ scene=bpy.context.scene
 scene.render.engine='CYCLES'
 scene.cycles.device='CPU'
 scene.cycles.samples=8
+scene.cycles.use_denoising=False
 scene.render.resolution_percentage=100
 scene.render.resolution_x=540; scene.render.resolution_y=960
 scene.render.fps=18; scene.frame_start=1; scene.frame_end=96
