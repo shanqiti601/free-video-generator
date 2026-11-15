@@ -5,7 +5,6 @@ on:
     branches: [experiment/blender-3d-pilot]
     paths:
       - 'scripts/blender_3d_pilot.py'
-      - 'scripts/qwen_review.py'
       - '.github/workflows/fact-bites-blender-pilot.yml'
 permissions:
   contents: read
@@ -97,20 +96,6 @@ jobs:
           subprocess.run(['ffmpeg','-y','-loglevel','error','-i','output/unboxed/final_1.jpg','-i','output/unboxed/final_2.jpg','-i','output/unboxed/final_3.jpg','-i','output/unboxed/final_4.jpg','-filter_complex','hstack=inputs=4,scale=1080:-1','-frames:v','1','output/unboxed/QA-CONTACT-SHEET.jpg'],check=True)
           print('FULL_EPISODE_QA_PASSED', duration, v['width'], v['height'], a['codec_name'])
           PY
-      - name: Independent Qwen visual and script review
-        env:
-          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
-          QWEN_BASE_URL: ${{ secrets.QWEN_BASE_URL }}
-          QWEN_MODEL: qwen3.8-max
-        run: |
-          if [ -z "$DASHSCOPE_API_KEY" ] || [ -z "$QWEN_BASE_URL" ]; then
-            echo "QWEN_REVIEW_SKIPPED: configure DASHSCOPE_API_KEY and QWEN_BASE_URL secrets."
-            exit 0
-          fi
-          python scripts/qwen_review.py \
-            --script output/unboxed/narration.txt \
-            --frames output/unboxed/final_1.jpg output/unboxed/final_2.jpg output/unboxed/final_3.jpg output/unboxed/final_4.jpg \
-            --output output/unboxed/QWEN-REVIEW.json
       - name: Upload full episode and QA
         if: always()
         uses: actions/upload-artifact@v4
@@ -120,7 +105,6 @@ jobs:
             output/unboxed/FACT-BITES-UNBOXED-EP01.mp4
             output/unboxed/QA-METADATA.json
             output/unboxed/QA-CONTACT-SHEET.jpg
-            output/unboxed/QWEN-REVIEW.json
             output/unboxed/narration.txt
             output/unboxed/subtitles.srt
           if-no-files-found: ignore
