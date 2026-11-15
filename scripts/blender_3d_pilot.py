@@ -4,7 +4,10 @@ from mathutils import Vector
 bpy.ops.object.select_all(action='SELECT'); bpy.ops.object.delete(use_global=False)
 for d in bpy.data.materials: bpy.data.materials.remove(d)
 scene=bpy.context.scene
-scene.render.engine='CYCLES'\nscene.cycles.device='CPU'\nscene.cycles.samples=8\nscene.render.resolution_percentage=67
+scene.render.engine='CYCLES'
+scene.cycles.device='CPU'
+scene.cycles.samples=8
+scene.render.resolution_percentage=100
 scene.render.resolution_x=540; scene.render.resolution_y=960
 scene.render.fps=18; scene.frame_start=1; scene.frame_end=96
 scene.render.image_settings.file_format='FFMPEG'; scene.render.ffmpeg.format='MPEG4'; scene.render.ffmpeg.codec='H264'; scene.render.ffmpeg.constant_rate_factor='HIGH'; scene.render.filepath=os.path.abspath('output/unboxed/BLENDER-3D-PILOT.mp4')
